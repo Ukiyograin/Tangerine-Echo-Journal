@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>柑音手帐 | 二次元博客</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fef7e8;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 235, 205, 0.6) 2%, transparent 2.5%),
+                              radial-gradient(circle at 85% 70%, rgba(255, 215, 170, 0.5) 1.5%, transparent 2%);
+            background-size: 48px 48px, 32px 32px;
+            font-family: 'Segoe UI', 'Noto Sans CJK JP', 'Helvetica Neue', 'Poppins', system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
+            color: #3e2a1f;
+            line-height: 1.6;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            backdrop-filter: blur(0px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .title-icon {
+            font-size: 3.8rem;
+            display: inline-block;
+            filter: drop-shadow(0 6px 12px rgba(241, 147, 67, 0.2));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            background: linear-gradient(135deg, #e68a2e, #c95a0f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            margin-top: 0.5rem;
+            font-weight: 700;
+        }
+
+        .sub {
+            color: #c2834b;
+            font-size: 0.95rem;
+            border-top: 2px dotted #fad7a0;
+            display: inline-block;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .blog-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .post-card {
+            background: #fffaf2;
+            border-radius: 42px 32px 48px 32px;
+            box-shadow: 0 18px 32px -12px rgba(100, 60, 10, 0.12), 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+            border: 1px solid #ffe1b9;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 24px 40px -16px rgba(180, 90, 30, 0.2);
+            border-color: #ffce96;
+        }
+
+        .post-header {
+            padding: 1.6rem 2rem 0.8rem 2rem;
+            border-bottom: 2px dashed #ffe0bc;
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .post-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .post-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #b45116;
+            letter-spacing: -0.3px;
+            word-break: break-word;
+            flex: 1;
+            background: linear-gradient(120deg, #d96c1e, #f09d4a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .post-meta {
+            padding: 0.2rem 2rem 0rem 2rem;
+            font-size: 0.8rem;
+            color: #bb7a44;
+            display: flex;
+            gap: 1.2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff1e3;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
+        .post-content {
+            padding: 1.8rem 2rem 2rem 2rem;
+            font-size: 1rem;
+            color: #382617;
+        }
+
+        .post-content h1, .post-content h2, .post-content h3 {
+            margin-top: 1.2em;
+            margin-bottom: 0.6em;
+            font-weight: 650;
+            color: #c25b1a;
+            border-left: 6px solid #ffbc6e;
+            padding-left: 1rem;
+        }
+
+        .post-content p {
+            margin-bottom: 1rem;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+            margin: 1rem 0;
+        }
+
+        .post-content code {
+            background: #fcedda;
+            padding: 0.2rem 0.4rem;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            color: #b9531a;
+        }
+
+        .post-content pre {
+            background: #2d2118;
+            padding: 1rem;
+            border-radius: 24px;
+            overflow-x: auto;
+            margin: 1.2rem 0;
+        }
+
+        .post-content pre code {
+            background: transparent;
+            color: #fbe3c9;
+            padding: 0;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid #f3a257;
+            background: #fff3e6;
+            padding: 0.8rem 1.2rem;
+            border-radius: 24px;
+            margin: 1rem 0;
+            font-style: italic;
+            color: #794f2a;
+        }
+
+        .post-content a {
+            color: #e0772e;
+            text-decoration: none;
+            border-bottom: 1px dashed #ffb469;
+        }
+
+        .post-content a:hover {
+            color: #bc5a1a;
+        }
+
+        .loading-area, .error-area, .empty-area {
+            background: #fff6ed;
+            border-radius: 64px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            border: 1px solid #ffe0bd;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            border: 4px solid #ffe1bd;
+            border-top: 4px solid #e97c2b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 1.8rem;
+            font-size: 0.85rem;
+            color: #c3844b;
+            border-top: 1px solid #ffe1bb;
+        }
+
+        .deco-leaf {
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .powered {
+            font-family: 'Segoe UI', monospace;
+            letter-spacing: 1px;
+            background: #fff4e8;
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 60px;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #c27d45;
+        }
+
+        @media (max-width: 680px) {
+            body { padding: 1rem; }
+            .post-title { font-size: 1.5rem; }
+            .post-header { padding: 1rem 1.2rem; }
+            .post-content { padding: 1.2rem; }
+            .post-meta { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="title-icon">🍊📖🍜</div>
+        <h1>柑音手帐</h1>
+        <div class="sub">✦  doc木漏れ日  ✦  从/docs收集故事</div>
+    </header>
+    <div id="blogRoot" class="blog-grid">
+        <div class="loading-area">
+            <div class="spinner"></div>
+            <div style="margin-top: 1.2rem;">翻开书页 寻找文章…… 📖✨</div>
+        </div>
+    </div>
+    <footer>
+        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手帐 · powered by Ukiyograin  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
+        <div class="powered">✨ 梦现文库 ✨</div>
+    </footer>
+</div>
+
+<script>
+    (function(){
+        const DOCS_PATH = '/docs/';
+        const blogContainer = document.getElementById('blogRoot');
+
+        function getFileListFromGithubRepo() {
+            return new Promise((resolve, reject) => {
+                const repoPath = window.location.pathname;
+                let base = '';
+                if (repoPath.endsWith('/')) {
+                    base = repoPath;
+                } else {
+                    const lastSlash = repoPath.lastIndexOf('/');
+                    base = repoPath.substring(0, lastSlash + 1);
+                }
+                const apiUrl = `${base}docs/`;
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`无法获取目录列表 (${response.status})`);
+                        }
+                        return response.text();
+                    })
+                    .then(htmlText => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlText, 'text/html');
+                        const links = Array.from(doc.querySelectorAll('a'));
+                        const mdFiles = [];
+                        for (let link of links) {
+                            let href = link.getAttribute('href');
+                            if (href && href.endsWith('.md') && !href.startsWith('?') && !href.startsWith('#')) {
+                                let fileName = decodeURIComponent(href);
+                                if (fileName.startsWith('./')) fileName = fileName.substring(2);
+                                mdFiles.push(fileName);
+                            }
+                        }
+                        if (mdFiles.length === 0) {
+                            reject(new Error('未在docs目录下找到任何.md文件，请确认路径'));
+                        } else {
+                            resolve(mdFiles);
+                        }
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        function getMarkdownContent(fileName) {
+            const basePath = window.location.pathname;
+            let baseFolder = '';
+            if (basePath.endsWith('/')) {
+                baseFolder = basePath;
+            } else {
+                const lastSlash = basePath.lastIndexOf('/');
+                baseFolder = basePath.substring(0, lastSlash + 1);
+            }
+            const fileUrl = `${baseFolder}docs/${fileName}`;
+            return fetch(fileUrl).then(res => {
+                if (!res.ok) throw new Error(`获取 ${fileName} 失败`);
+                return res.text();
+            });
+        }
+
+        function slugify(text) {
+            return text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+        }
+
+        function extractTitleFromMarkdown(mdContent) {
+            const lines = mdContent.split(/\r?\n/);
+            for (let line of lines) {
+                if (line.startsWith('# ')) {
+                    return line.substring(2).trim();
+                }
+            }
+            return null;
+        }
+
+        function getPreviewText(mdContent, maxLen = 130) {
+            const withoutTitle = mdContent.replace(/^#\s+.*$/m, '').trim();
+            const plainText = withoutTitle.replace(/([#*`>_\-~])/g, ' ').replace(/\s+/g, ' ').trim();
+            if (plainText.length <= maxLen) return plainText;
+            return plainText.substring(0, maxLen) + '……';
+        }
+
+        function getRandomIconForFile(filename) {
+            const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
+            let hash = 0;
+            for (let i = 0; i < filename.length; i++) {
+                hash = ((hash << 5) - hash) + filename.charCodeAt(i);
+                hash |= 0;
+            }
+            return icons[Math.abs(hash) % icons.length];
+        }
+
+        function formatDateFromFilenameOrNow(filename) {
+            const match = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                return `${match[1]}年${match[2]}月${match[3]}日`;
+            }
+            const today = new Date();
+            return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 · 微风记录`;
+        }
+
+        function renderBlogs(postsData) {
+            if (!postsData.length) {
+                blogContainer.innerHTML = `<div class="empty-area">📭  /docs 里没有找到文章……<br>✦ 试着放一些 .md 文件吧 ✦</div>`;
+                return;
+            }
+            let htmlString = '';
+            for (let post of postsData) {
+                const icon = post.icon;
+                const title = post.title;
+                const dateStr = post.date;
+                const preview = post.preview;
+                const contentHtml = post.contentHtml;
+                const fileNameForId = post.fileName;
+                const anchorId = `post-${slugify(fileNameForId)}`;
+                htmlString += `
+                    <article class="post-card" id="${anchorId}">
+                        <div class="post-header">
+                            <span class="post-icon">${icon}</span>
+                            <h2 class="post-title">${escapeHtml(title)}</h2>
+                        </div>
+                        <div class="post-meta">
+                            <span class="meta-item">📅 ${escapeHtml(dateStr)}</span>
+                            <span class="meta-item">📄 ${escapeHtml(post.fileName)}</span>
+                            <span class="meta-item">✍️ 预览 · ${escapeHtml(preview)}</span>
+                        </div>
+                        <div class="post-content markdown-body">
+                            ${contentHtml}
+                        </div>
+                    </article>
+                `;
+            }
+            blogContainer.innerHTML = htmlString;
+            document.querySelectorAll('.post-content pre code').forEach((block) => {
+                if (typeof hljs !== 'undefined') {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        async function main() {
+            try {
+                let mdFiles = [];
+                try {
+                    mdFiles = await getFileListFromGithubRepo();
+                } catch (dirErr) {
+                    console.warn('通过目录遍历失败，尝试备用静态清单模式', dirErr);
+                    blogContainer.innerHTML = `<div class="error-area">🍂 无法自动列出docs目录<br>🪄 请在GitHub Pages设置中确保docs文件夹可浏览<br>或使用仓库根目录直接部署<br><span style="font-size:0.8rem;">✨ 小提示: 需要开启GitHub Pages的“/docs”源，且目录必须可索引</span></div>`;
+                    return;
+                }
+                if (!mdFiles.length) {
+                    blogContainer.innerHTML = `<div class="empty-area">📭 未捕获任何.md 文件<br>🍊 请确认docs文件夹内存在markdown文章~</div>`;
+                    return;
+                }
+                const postsPromises = mdFiles.map(async (fileName) => {
+                    try {
+                        const rawMd = await getMarkdownContent(fileName);
+                        const titleFromMd = extractTitleFromMarkdown(rawMd);
+                        let finalTitle = titleFromMd ? titleFromMd : fileName.replace(/\.md$/, '').replace(/[-_]/g, ' ');
+                        const previewText = getPreviewText(rawMd, 120);
+                        const dateStr = formatDateFromFilenameOrNow(fileName);
+                        const icon = getRandomIconForFile(fileName);
+                        let parsedHtml = '';
+                        if (typeof marked !== 'undefined') {
+                            parsedHtml = marked.parse(rawMd);
+                            if (parsedHtml instanceof Promise) parsedHtml = await parsedHtml;
+                        } else {
+                            parsedHtml = `<p>无法解析markdown，请检查marked库</p><pre>${escapeHtml(rawMd.substring(0, 300))}</pre>`;
+                        }
+                        return {
+                            fileName: fileName,
+                            title: finalTitle,
+                            preview: previewText,
+                            date: dateStr,
+                            icon: icon,
+                            contentHtml: parsedHtml,
+                            raw: rawMd
+                        };
+                    } catch (err) {
+                        console.error(`读取文件 ${fileName} 出错`, err);
+                        return {
+                            fileName: fileName,
+                            title: fileName.replace(/\.md$/, '') + ' (读取失败)',
+                            preview: '内容无法载入，可能路径或编码错误',
+                            date: '未知日期',
+                            icon: '⚠️',
+                            contentHtml: `<div style="background:#fff0e0;padding:1rem;border-radius:28px;">⚠️ 无法读取此markdown文件，请检查文件是否存在或路径权限。</div>`,
+                        };
+                    }
+                });
+                const postsResults = await Promise.all(postsPromises);
+                postsResults.sort((a,b) => b.fileName.localeCompare(a.fileName));
+                renderBlogs(postsResults);
+            } catch (globalErr) {
+                console.error(globalErr);
+                blogContainer.innerHTML = `<div class="error-area">🍂 获取文章时发生错误: ${escapeHtml(globalErr.message)}<br>🎋 请确保部署在GitHub Pages且docs文件夹内有.md文件，并开启目录浏览权限。</div>`;
+            }
+        }
+
+        if (typeof marked === 'undefined') {
+            blogContainer.innerHTML = `<div class="error-area">⚠️ marked库加载失败，请检查网络。刷新重试~</div>`;
+            return;
+        }
+        main();
+    })();
+</script>
+</body>
+</html>
