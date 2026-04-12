@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>柑音手帐 | 二次元博客</title>
+    <title>柑音手账 | 二次元博客</title>
     <link rel="icon" type="image/png" href="/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -272,8 +272,7 @@
         </div>
     </div>
     <footer>
-        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手帐 · powered by Ukiyograin  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
-        <div class="powered">✨ 梦现文库 ✨</div>
+        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手账 · powered by Ukiyograin  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
     </footer>
 </div>
 
@@ -380,7 +379,7 @@
                     const post = await loadMarkdownAndRender(fileName);
                     posts.push(post);
                 } catch (err) {
-                    // 静默处理错误，不输出任何日志
+                    // 静默处理
                 }
             }
 
@@ -388,8 +387,6 @@
                 blogContainer.innerHTML = `<div class="empty-area">📭 文章加载失败，请检查文件名是否正确</div>`;
                 return;
             }
-
-            posts.sort((a, b) => b.fileName.localeCompare(a.fileName));
 
             let htmlString = '';
             for (const post of posts) {
