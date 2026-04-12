@@ -3,6 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>柑音手帐 | 二次元博客</title>
+    <link rel="icon" type="image/png" href="/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -379,7 +380,7 @@
                     const post = await loadMarkdownAndRender(fileName);
                     posts.push(post);
                 } catch (err) {
-                    console.error(`加载 ${fileName} 失败`, err);
+                    // 静默处理错误，不输出任何日志
                 }
             }
 
@@ -392,8 +393,6 @@
 
             let htmlString = '';
             for (const post of posts) {
-                const plainPreview = post.html.replace(/<[^>]*>/g, '').substring(0, 120);
-                const preview = plainPreview.length ? plainPreview + '……' : '无预览内容';
                 htmlString += `
                     <article class="post-card" id="post-${slugify(post.fileName)}">
                         <div class="post-header">
@@ -402,8 +401,6 @@
                         </div>
                         <div class="post-meta">
                             <span class="meta-item">📅 ${escapeHtml(post.date)}</span>
-                            <span class="meta-item">📄 ${escapeHtml(post.fileName)}</span>
-                            <span class="meta-item">✍️ ${escapeHtml(preview)}</span>
                         </div>
                         <div class="post-content">
                             ${post.html}
@@ -412,9 +409,11 @@
                 `;
             }
             blogContainer.innerHTML = htmlString;
-            document.querySelectorAll('.post-content pre code').forEach((block) => {
-                if (typeof hljs !== 'undefined') hljs.highlightElement(block);
-            });
+            if (typeof hljs !== 'undefined') {
+                document.querySelectorAll('.post-content pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
         }
 
         if (typeof marked === 'undefined') {
