@@ -14,7 +14,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: #fef7e8;
             background-image: radial-gradient(circle at 10% 20%, rgba(255, 235, 205, 0.6) 2%, transparent 2.5%),
@@ -25,18 +24,15 @@
             line-height: 1.6;
             padding: 2rem 1.5rem;
         }
-
         .container {
             max-width: 1100px;
             margin: 0 auto;
         }
-
         header {
             text-align: center;
             margin-bottom: 3rem;
             position: relative;
         }
-
         .flowing-text {
             font-size: 2.6rem;
             font-weight: 700;
@@ -53,12 +49,10 @@
             animation: flowFullColor 20s linear infinite;
             text-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
-
         @keyframes flowFullColor {
             0% { background-position: 0% 50%; }
             100% { background-position: 500% 50%; }
         }
-
         .sub {
             color: #c2834b;
             font-size: 0.95rem;
@@ -67,13 +61,11 @@
             padding-top: 0.5rem;
             margin-top: 0.5rem;
         }
-
         .blog-grid {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
-
         .post-card {
             background: #fffaf2;
             border-radius: 42px 32px 48px 32px;
@@ -82,13 +74,11 @@
             border: 1px solid #ffe1b9;
             overflow: hidden;
         }
-
         .post-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 24px 40px -16px rgba(180, 90, 30, 0.2);
             border-color: #ffce96;
         }
-
         .post-header {
             padding: 1.6rem 2rem 0.8rem 2rem;
             border-bottom: 2px dashed #ffe0bc;
@@ -97,11 +87,9 @@
             flex-wrap: wrap;
             gap: 0.8rem;
         }
-
         .post-icon {
             font-size: 2rem;
         }
-
         .post-title {
             font-size: 1.9rem;
             font-weight: 700;
@@ -113,7 +101,6 @@
             -webkit-background-clip: text;
             color: transparent;
         }
-
         .post-meta {
             padding: 0.2rem 2rem 0rem 2rem;
             font-size: 0.8rem;
@@ -123,7 +110,6 @@
             align-items: center;
             flex-wrap: wrap;
         }
-
         .meta-item {
             display: inline-flex;
             align-items: center;
@@ -132,13 +118,11 @@
             padding: 4px 12px;
             border-radius: 40px;
         }
-
         .post-content {
             padding: 1.8rem 2rem 2rem 2rem;
             font-size: 1rem;
             color: #382617;
         }
-
         .post-content h1, .post-content h2, .post-content h3 {
             margin-top: 1.2em;
             margin-bottom: 0.6em;
@@ -147,18 +131,15 @@
             border-left: 6px solid #ffbc6e;
             padding-left: 1rem;
         }
-
         .post-content p {
             margin-bottom: 1rem;
         }
-
         .post-content img {
             max-width: 100%;
             border-radius: 28px;
             box-shadow: 0 6px 14px rgba(0,0,0,0.05);
             margin: 1rem 0;
         }
-
         .post-content code {
             background: #fcedda;
             padding: 0.2rem 0.4rem;
@@ -167,7 +148,6 @@
             font-size: 0.9em;
             color: #b9531a;
         }
-
         .post-content pre {
             background: #2d2118;
             padding: 1rem;
@@ -175,13 +155,11 @@
             overflow-x: auto;
             margin: 1.2rem 0;
         }
-
         .post-content pre code {
             background: transparent;
             color: #fbe3c9;
             padding: 0;
         }
-
         .post-content blockquote {
             border-left: 4px solid #f3a257;
             background: #fff3e6;
@@ -191,17 +169,14 @@
             font-style: italic;
             color: #794f2a;
         }
-
         .post-content a {
             color: #e0772e;
             text-decoration: none;
             border-bottom: 1px dashed #ffb469;
         }
-
         .post-content a:hover {
             color: #bc5a1a;
         }
-
         .loading-area, .empty-area {
             background: #fff6ed;
             border-radius: 64px;
@@ -209,7 +184,6 @@
             text-align: center;
             border: 1px solid #ffe0bd;
         }
-
         .spinner {
             display: inline-block;
             width: 48px;
@@ -219,9 +193,7 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-
         footer {
             text-align: center;
             margin-top: 4rem;
@@ -230,12 +202,10 @@
             color: #c3844b;
             border-top: 1px solid #ffe1bb;
         }
-
         .deco-leaf {
             font-size: 1.2rem;
             opacity: 0.6;
         }
-
         @media (max-width: 680px) {
             body { padding: 1rem; }
             .post-title { font-size: 1.5rem; }
@@ -328,36 +298,37 @@
                 return icons[Math.abs(hash) % icons.length];
             }
 
-            function formatDate(dateStr) {
-                if (!dateStr) return null;
-                const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+            function formatDateFromFilename(filename) {
+                const match = filename.match(/_(\d{4})-(\d{2})-(\d{2})\.md$/);
                 if (match) {
                     return `${match[1]}年${match[2]}月${match[3]}日`;
                 }
-                return null;
-            }
-
-            function fallbackDateFromFilename(filename) {
-                const match = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
-                if (match) {
-                    return `${match[1]}年${match[2]}月${match[3]}日`;
+                const fallbackMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (fallbackMatch) {
+                    return `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`;
                 }
                 const today = new Date();
                 return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
             }
 
-            async function loadMarkdownAndRender(fileName, customDate) {
+            async function loadMarkdownAndRender(fileName) {
                 const base = getBaseFolder();
                 const url = `${base}docs/${fileName}`;
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`无法加载 ${fileName}`);
                 const md = await res.text();
-                const title = extractTitleFromMarkdown(md) || fileName.replace(/\.md$/, '').replace(/[-_]/g, ' ');
-                let date = customDate ? formatDate(customDate) : null;
-                if (!date) {
-                    date = fallbackDateFromFilename(fileName);
+                
+                let title = extractTitleFromMarkdown(md);
+                if (!title) {
+                    let name = fileName.replace(/\.md$/, '');
+                    name = name.replace(/_[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '');
+                    name = name.replace(/[-_]/g, ' ');
+                    title = name;
                 }
+                
+                const date = formatDateFromFilename(fileName);
                 const icon = getRandomIconForFile(fileName);
+                
                 let html = '';
                 if (typeof marked !== 'undefined') {
                     html = marked.parse(md);
@@ -371,44 +342,28 @@
             async function fetchPosts() {
                 const base = getBaseFolder();
                 const listUrl = `${base}docs/list.txt`;
-                let fileEntries = [];
+                let fileNames = [];
                 try {
                     const res = await fetch(listUrl);
                     if (!res.ok) {
                         throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
                     }
                     const text = await res.text();
-                    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-                    
-                    for (const line of lines) {
-                        let fileName, customDate;
-                        if (line.includes('|')) {
-                            const parts = line.split('|');
-                            fileName = parts[0].trim();
-                            customDate = parts[1] ? parts[1].trim() : null;
-                        } else {
-                            fileName = line.trim();
-                            customDate = null;
-                        }
-                        if (fileName && fileName.endsWith('.md')) {
-                            fileEntries.push({ fileName, customDate });
-                        }
-                    }
-                    
-                    if (fileEntries.length === 0) {
-                        throw new Error('list.txt 中没有有效的 .md 文件');
+                    fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
+                    if (fileNames.length === 0) {
+                        throw new Error('list.txt 中没有 .md 文件');
                     }
                 } catch (err) {
                     throw new Error(`读取列表失败: ${err.message}`);
                 }
 
                 const loadedPosts = [];
-                for (const entry of fileEntries) {
+                for (const fileName of fileNames) {
                     try {
-                        const post = await loadMarkdownAndRender(entry.fileName, entry.customDate);
+                        const post = await loadMarkdownAndRender(fileName);
                         loadedPosts.push(post);
                     } catch (err) {
-                        console.warn(`跳过文件 ${entry.fileName}:`, err);
+                        console.warn(`跳过文件 ${fileName}:`, err);
                     }
                 }
                 if (loadedPosts.length === 0) {
