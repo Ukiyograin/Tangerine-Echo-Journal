@@ -37,19 +37,6 @@
             position: relative;
         }
 
-        .title-icon {
-            font-size: 3.8rem;
-            display: inline-block;
-            filter: drop-shadow(0 6px 12px rgba(241, 147, 67, 0.2));
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
-        }
-
         .flowing-text {
             font-size: 2.6rem;
             font-weight: 700;
@@ -68,12 +55,8 @@
         }
 
         @keyframes flowFullColor {
-            0% {
-                background-position: 0% 50%;
-            }
-            100% {
-                background-position: 500% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            100% { background-position: 500% 50%; }
         }
 
         .sub {
@@ -345,7 +328,16 @@
                 return icons[Math.abs(hash) % icons.length];
             }
 
-            function formatDateFromFilename(filename) {
+            function formatDate(dateStr) {
+                if (!dateStr) return null;
+                const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (match) {
+                    return `${match[1]}年${match[2]}月${match[3]}日`;
+                }
+                return null;
+            }
+
+            function fallbackDateFromFilename(filename) {
                 const match = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
                 if (match) {
                     return `${match[1]}年${match[2]}月${match[3]}日`;
@@ -354,14 +346,17 @@
                 return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
             }
 
-            async function loadMarkdownAndRender(fileName) {
+            async function loadMarkdownAndRender(fileName, customDate) {
                 const base = getBaseFolder();
                 const url = `${base}docs/${fileName}`;
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(`无法加载 ${fileName}`);
                 const md = await res.text();
                 const title = extractTitleFromMarkdown(md) || fileName.replace(/\.md$/, '').replace(/[-_]/g, ' ');
-                const date = formatDateFromFilename(fileName);
+                let date = customDate ? formatDate(customDate) : null;
+                if (!date) {
+                    date = fallbackDateFromFilename(fileName);
+                }
                 const icon = getRandomIconForFile(fileName);
                 let html = '';
                 if (typeof marked !== 'undefined') {
@@ -376,28 +371,44 @@
             async function fetchPosts() {
                 const base = getBaseFolder();
                 const listUrl = `${base}docs/list.txt`;
-                let fileNames = [];
+                let fileEntries = [];
                 try {
                     const res = await fetch(listUrl);
                     if (!res.ok) {
                         throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
                     }
                     const text = await res.text();
-                    fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
-                    if (fileNames.length === 0) {
-                        throw new Error('list.txt 中没有 .md 文件');
+                    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+                    
+                    for (const line of lines) {
+                        let fileName, customDate;
+                        if (line.includes('|')) {
+                            const parts = line.split('|');
+                            fileName = parts[0].trim();
+                            customDate = parts[1] ? parts[1].trim() : null;
+                        } else {
+                            fileName = line.trim();
+                            customDate = null;
+                        }
+                        if (fileName && fileName.endsWith('.md')) {
+                            fileEntries.push({ fileName, customDate });
+                        }
+                    }
+                    
+                    if (fileEntries.length === 0) {
+                        throw new Error('list.txt 中没有有效的 .md 文件');
                     }
                 } catch (err) {
                     throw new Error(`读取列表失败: ${err.message}`);
                 }
 
                 const loadedPosts = [];
-                for (const fileName of fileNames) {
+                for (const entry of fileEntries) {
                     try {
-                        const post = await loadMarkdownAndRender(fileName);
+                        const post = await loadMarkdownAndRender(entry.fileName, entry.customDate);
                         loadedPosts.push(post);
                     } catch (err) {
-                        console.warn(`跳过文件 ${fileName}:`, err);
+                        console.warn(`跳过文件 ${entry.fileName}:`, err);
                     }
                 }
                 if (loadedPosts.length === 0) {
