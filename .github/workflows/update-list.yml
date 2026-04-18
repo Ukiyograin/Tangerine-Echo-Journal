@@ -7,7 +7,7 @@ on:
     branches:
       - main
       - master
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   update-list:
@@ -20,13 +20,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 生成 list.txt
+      - name: 生成 list.txt（带最后修改日期）
         run: |
-          # 进入 docs 目录，列出所有 .md 文件（按文件名排序）
           cd docs
-          # 生成文件列表，每行一个文件名
-          ls -1 *.md 2>/dev/null | sort > list.txt
-          echo "已生成 list.txt，包含以下文件："
+          # 清空 list.txt
+          > list.txt
+          
+          # 遍历所有 .md 文件，按文件名排序
+          for file in $(ls -1 *.md 2>/dev/null | sort); do
+            # 获取该文件的最后 commit 日期（ISO 格式 YYYY-MM-DD）
+            last_date=$(git log -1 --format=%as -- "$file" 2>/dev/null || git log -1 --format=%ci -- "$file" 2>/dev/null | cut -d' ' -f1)
+            
+            # 如果 git log 没取到（新文件未提交），用当前日期
+            if [ -z "$last_date" ]; then
+              last_date=$(date +%Y-%m-%d)
+            fi
+            
+            # 写入格式: 文件名|日期
+            echo "${file}|${last_date}" >> list.txt
+          done
+          
+          echo "已生成 list.txt："
           cat list.txt
 
       - name: 检查是否有变更
