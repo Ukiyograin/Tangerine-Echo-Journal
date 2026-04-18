@@ -1,0 +1,50 @@
+name: 自动更新文章列表
+
+on:
+  push:
+    paths:
+      - 'docs/**/*.md'
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  update-list:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 生成 list.txt
+        run: |
+          # 进入 docs 目录，列出所有 .md 文件（按文件名排序）
+          cd docs
+          # 生成文件列表，每行一个文件名
+          ls -1 *.md 2>/dev/null | sort > list.txt
+          echo "已生成 list.txt，包含以下文件："
+          cat list.txt
+
+      - name: 检查是否有变更
+        id: check
+        run: |
+          if git diff --quiet docs/list.txt; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "list.txt 无变化"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "list.txt 需要更新"
+          fi
+
+      - name: 提交变更
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/list.txt
+          git commit -m "chore: 自动更新文章列表 [skip ci]"
+          git push
