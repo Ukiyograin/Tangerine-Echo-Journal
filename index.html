@@ -2,11 +2,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>柑音手账 | 二次元博客</title>
+    <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         * {
             margin: 0;
@@ -49,15 +50,30 @@
             100% { transform: translateY(0px); }
         }
 
-        h1 {
+        .flowing-text {
             font-size: 2.6rem;
-            background: linear-gradient(135deg, #e68a2e, #c95a0f);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-top: 0.5rem;
+            display: inline-block;
+            background: linear-gradient(270deg, 
+                #FF6B6B, #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B,
+                #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B);
+            background-size: 500% auto;
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: 2px;
-            margin-top: 0.5rem;
-            font-weight: 700;
+            animation: flowFullColor 20s linear infinite;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        @keyframes flowFullColor {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 500% 50%;
+            }
         }
 
         .sub {
@@ -237,188 +253,189 @@
             opacity: 0.6;
         }
 
-        .powered {
-            font-family: 'Segoe UI', monospace;
-            letter-spacing: 1px;
-            background: #fff4e8;
-            display: inline-block;
-            padding: 0.2rem 1rem;
-            border-radius: 60px;
-            margin-top: 0.5rem;
-            font-size: 0.7rem;
-            color: #c27d45;
-        }
-
         @media (max-width: 680px) {
             body { padding: 1rem; }
             .post-title { font-size: 1.5rem; }
             .post-header { padding: 1rem 1.2rem; }
             .post-content { padding: 1.2rem; }
             .post-meta { padding: 0 1rem; }
+            .flowing-text { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
-        <div class="title-icon">🍊📖🍜</div>
-        <h1>柑音手帐</h1>
-        <div class="sub">✦  Tangerine Echo Journal  ✦</div>
+        <h1 class="flowing-text">柑音手帐</h1>
+        <div class="sub">✦ Tangerine Echo Journal ✦</div>
     </header>
-    <div id="blogRoot" class="blog-grid">
-        <div class="loading-area">
-            <div class="spinner"></div>
-            <div style="margin-top: 1.2rem;">翻开书页 寻找文章…… 📖✨</div>
+    
+    <div id="app">
+        <div class="blog-grid">
+            <div v-if="loading" class="loading-area">
+                <div class="spinner"></div>
+                <div style="margin-top: 1.2rem;">翻开书页 寻找文章…… 📖✨</div>
+            </div>
+            <div v-else-if="error" class="empty-area">
+                {{ error }}
+            </div>
+            <template v-else>
+                <article v-for="post in posts" :key="post.fileName" class="post-card">
+                    <div class="post-header">
+                        <span class="post-icon">{{ post.icon }}</span>
+                        <h2 class="post-title" v-html="escapeHtml(post.title)"></h2>
+                    </div>
+                    <div class="post-meta">
+                        <span class="meta-item">📅 {{ post.date }}</span>
+                    </div>
+                    <div class="post-content" v-html="post.html"></div>
+                </article>
+            </template>
         </div>
     </div>
+    
     <footer>
-        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手账 · powered by Ukiyograin  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
+        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手账  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
     </footer>
 </div>
 
 <script>
-    (function(){
-        const blogContainer = document.getElementById('blogRoot');
+    const { createApp, ref, onMounted, nextTick } = Vue;
 
-        function getBaseFolder() {
-            const path = window.location.pathname;
-            if (path.endsWith('/')) return path;
-            const lastSlash = path.lastIndexOf('/');
-            return path.substring(0, lastSlash + 1);
-        }
+    createApp({
+        setup() {
+            const loading = ref(true);
+            const error = ref('');
+            const posts = ref([]);
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        function slugify(text) {
-            return text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
-        }
-
-        function extractTitleFromMarkdown(mdContent) {
-            const lines = mdContent.split(/\r?\n/);
-            for (let line of lines) {
-                if (line.startsWith('# ')) {
-                    return line.substring(2).trim();
-                }
-            }
-            return null;
-        }
-
-        function getRandomIconForFile(filename) {
-            const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
-            let hash = 0;
-            for (let i = 0; i < filename.length; i++) {
-                hash = ((hash << 5) - hash) + filename.charCodeAt(i);
-                hash |= 0;
-            }
-            return icons[Math.abs(hash) % icons.length];
-        }
-
-        function formatDateFromFilename(filename) {
-            const match = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
-            if (match) {
-                return `${match[1]}年${match[2]}月${match[3]}日`;
-            }
-            const today = new Date();
-            return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
-        }
-
-        async function loadMarkdownAndRender(fileName) {
-            const base = getBaseFolder();
-            const url = `${base}docs/${fileName}`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`无法加载 ${fileName}`);
-            const md = await res.text();
-            const title = extractTitleFromMarkdown(md) || fileName.replace(/\.md$/, '').replace(/[-_]/g, ' ');
-            const date = formatDateFromFilename(fileName);
-            const icon = getRandomIconForFile(fileName);
-            let html = '';
-            if (typeof marked !== 'undefined') {
-                html = marked.parse(md);
-                if (html instanceof Promise) html = await html;
-            } else {
-                html = `<pre>${escapeHtml(md.substring(0, 500))}</pre>`;
-            }
-            return { fileName, title, date, icon, html };
-        }
-
-        async function main() {
-            const base = getBaseFolder();
-            const listUrl = `${base}docs/list.txt`;
-
-            let fileNames = [];
-            try {
-                const res = await fetch(listUrl);
-                if (!res.ok) {
-                    blogContainer.innerHTML = `<div class="empty-area">📭 未找到 docs/list.txt<br>请在文件中一行写一个.md文件名</div>`;
-                    return;
-                }
-                const text = await res.text();
-                fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
-                if (fileNames.length === 0) {
-                    blogContainer.innerHTML = `<div class="empty-area">📭 list.txt 中没有.md文件<br>示例：<br>1.md<br>2.md</div>`;
-                    return;
-                }
-            } catch (e) {
-                blogContainer.innerHTML = `<div class="empty-area">📭 无法读取 docs/list.txt<br>请创建该文件，一行一个.md文件名</div>`;
-                return;
+            function getBaseFolder() {
+                const path = window.location.pathname;
+                if (path.endsWith('/')) return path;
+                const lastSlash = path.lastIndexOf('/');
+                return path.substring(0, lastSlash + 1);
             }
 
-            blogContainer.innerHTML = `<div class="loading-area"><div class="spinner"></div><div>加载文章中……</div></div>`;
-
-            const posts = [];
-            for (const fileName of fileNames) {
-                try {
-                    const post = await loadMarkdownAndRender(fileName);
-                    posts.push(post);
-                } catch (err) {
-                    // 静默处理
-                }
-            }
-
-            if (posts.length === 0) {
-                blogContainer.innerHTML = `<div class="empty-area">📭 文章加载失败，请检查文件名是否正确</div>`;
-                return;
-            }
-
-            let htmlString = '';
-            for (const post of posts) {
-                htmlString += `
-                    <article class="post-card" id="post-${slugify(post.fileName)}">
-                        <div class="post-header">
-                            <span class="post-icon">${post.icon}</span>
-                            <h2 class="post-title">${escapeHtml(post.title)}</h2>
-                        </div>
-                        <div class="post-meta">
-                            <span class="meta-item">📅 ${escapeHtml(post.date)}</span>
-                        </div>
-                        <div class="post-content">
-                            ${post.html}
-                        </div>
-                    </article>
-                `;
-            }
-            blogContainer.innerHTML = htmlString;
-            if (typeof hljs !== 'undefined') {
-                document.querySelectorAll('.post-content pre code').forEach((block) => {
-                    hljs.highlightElement(block);
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
                 });
             }
-        }
 
-        if (typeof marked === 'undefined') {
-            blogContainer.innerHTML = `<div class="empty-area">⚠️ 加载中，请刷新重试</div>`;
-            return;
+            function extractTitleFromMarkdown(mdContent) {
+                const lines = mdContent.split(/\r?\n/);
+                for (let line of lines) {
+                    if (line.startsWith('# ')) {
+                        return line.substring(2).trim();
+                    }
+                }
+                return null;
+            }
+
+            function getRandomIconForFile(filename) {
+                const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
+                let hash = 0;
+                for (let i = 0; i < filename.length; i++) {
+                    hash = ((hash << 5) - hash) + filename.charCodeAt(i);
+                    hash |= 0;
+                }
+                return icons[Math.abs(hash) % icons.length];
+            }
+
+            function formatDateFromFilename(filename) {
+                const match = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (match) {
+                    return `${match[1]}年${match[2]}月${match[3]}日`;
+                }
+                const today = new Date();
+                return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+            }
+
+            async function loadMarkdownAndRender(fileName) {
+                const base = getBaseFolder();
+                const url = `${base}docs/${fileName}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`无法加载 ${fileName}`);
+                const md = await res.text();
+                const title = extractTitleFromMarkdown(md) || fileName.replace(/\.md$/, '').replace(/[-_]/g, ' ');
+                const date = formatDateFromFilename(fileName);
+                const icon = getRandomIconForFile(fileName);
+                let html = '';
+                if (typeof marked !== 'undefined') {
+                    html = marked.parse(md);
+                    if (html instanceof Promise) html = await html;
+                } else {
+                    html = `<pre>${escapeHtml(md.substring(0, 500))}</pre>`;
+                }
+                return { fileName, title, date, icon, html };
+            }
+
+            async function fetchPosts() {
+                const base = getBaseFolder();
+                const listUrl = `${base}docs/list.txt`;
+                let fileNames = [];
+                try {
+                    const res = await fetch(listUrl);
+                    if (!res.ok) {
+                        throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
+                    }
+                    const text = await res.text();
+                    fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
+                    if (fileNames.length === 0) {
+                        throw new Error('list.txt 中没有 .md 文件');
+                    }
+                } catch (err) {
+                    throw new Error(`读取列表失败: ${err.message}`);
+                }
+
+                const loadedPosts = [];
+                for (const fileName of fileNames) {
+                    try {
+                        const post = await loadMarkdownAndRender(fileName);
+                        loadedPosts.push(post);
+                    } catch (err) {
+                        console.warn(`跳过文件 ${fileName}:`, err);
+                    }
+                }
+                if (loadedPosts.length === 0) {
+                    throw new Error('没有成功加载任何文章，请检查 .md 文件是否存在');
+                }
+                return loadedPosts;
+            }
+
+            onMounted(async () => {
+                if (typeof marked === 'undefined') {
+                    error.value = 'Markdown 解析库加载失败，请刷新页面重试';
+                    loading.value = false;
+                    return;
+                }
+                try {
+                    const data = await fetchPosts();
+                    posts.value = data;
+                } catch (err) {
+                    error.value = err.message || '加载文章失败，请确保 docs 目录和 list.txt 配置正确';
+                } finally {
+                    loading.value = false;
+                    await nextTick();
+                    if (typeof hljs !== 'undefined') {
+                        document.querySelectorAll('.post-content pre code').forEach((block) => {
+                            hljs.highlightElement(block);
+                        });
+                    }
+                }
+            });
+
+            return {
+                loading,
+                error,
+                posts,
+                escapeHtml
+            };
         }
-        main();
-    })();
+    }).mount('#app');
 </script>
 </body>
 </html>
