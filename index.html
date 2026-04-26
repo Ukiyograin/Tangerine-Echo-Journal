@@ -1,7 +1,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
     <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
@@ -384,8 +384,6 @@
 
         .floating-tag-panel {
             position: fixed;
-            bottom: 4rem;
-            right: 2rem;
             width: 240px;
             max-height: 400px;
             background: #fffbf4;
@@ -398,7 +396,7 @@
             overflow: hidden;
             user-select: none;
             backdrop-filter: blur(6px);
-            transition: box-shadow 0.2s;
+            transition: box-shadow 0.2s, width 0.2s, max-height 0.2s;
         }
 
         .floating-tag-panel.dragging {
@@ -456,6 +454,7 @@
             gap: 4px;
             max-width: 130px;
             overflow: hidden;
+            white-space: nowrap;
         }
 
         .tag-badge:hover {
@@ -474,6 +473,7 @@
         .tag-text {
             display: inline-block;
             white-space: nowrap;
+            will-change: transform;
         }
 
         .tag-badge:hover .tag-text {
@@ -484,11 +484,8 @@
             0% {
                 transform: translateX(0);
             }
-            50% {
-                transform: translateX(calc(-100% + 100px));
-            }
             100% {
-                transform: translateX(0);
+                transform: translateX(-100%);
             }
         }
 
@@ -548,10 +545,11 @@
         }
 
         @media (max-width: 680px) {
-            .floating-tag-panel {
-                width: 200px;
-                right: 1rem;
-                bottom: 3rem;
+            body {
+                padding: 1rem 0.8rem;
+            }
+            .flowing-text {
+                font-size: 2rem;
             }
             .post-title {
                 font-size: 1.5rem;
@@ -566,8 +564,28 @@
             .post-tags {
                 padding: 0 1rem;
             }
-            .flowing-text {
-                font-size: 2rem;
+            .floating-tag-panel {
+                width: 180px;
+                max-height: 320px;
+                right: 10px;
+                bottom: 100px;
+                left: auto;
+                top: auto;
+                border-radius: 28px 32px 28px 32px;
+            }
+            .panel-body {
+                max-height: 200px;
+            }
+            .panel-body.expanded {
+                max-height: 280px;
+            }
+            .tag-badge {
+                max-width: 100px;
+                font-size: 0.7rem;
+            }
+            .search-wrap {
+                padding: 0.4rem 1rem;
+                margin-bottom: 1.2rem;
             }
         }
     </style>
@@ -622,7 +640,7 @@
                 </template>
             </div>
 
-            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length" :style="{ left: panelX + 'px', top: panelY + 'px' }" @mousedown="startDrag" :class="{ dragging: isDragging }">
+            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length" :style="{ left: panelX + 'px', top: panelY + 'px' }" @mousedown="startDrag" @touchstart.prevent="startDragTouch" :class="{ dragging: isDragging }">
                 <div class="panel-header">
                     <span>🏷️ 标签云</span>
                     <span style="font-size:0.7rem; opacity:0.7;">{{ isDragging ? '拖拽中...' : '拖我移动' }}</span>
@@ -667,11 +685,27 @@
                 const lightboxImg = ref(null);
                 const tagCloudExpanded = ref(false);
 
-                const panelX = ref(window.innerWidth - 280);
+                const panelX = ref(window.innerWidth - 260);
                 const panelY = ref(window.innerHeight - 420);
                 const isDragging = ref(false);
                 let dragOffsetX = 0;
                 let dragOffsetY = 0;
+
+                function setInitialPanelPosition() {
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+                    if (width <= 680) {
+                        panelX.value = width - 190;
+                        panelY.value = height - 320;
+                    } else {
+                        panelX.value = width - 260;
+                        panelY.value = height - 420;
+                    }
+                }
+
+                window.addEventListener('resize', () => {
+                    setInitialPanelPosition();
+                });
 
                 function startDrag(e) {
                     if (e.target.tagName === 'BUTTON' || e.target.closest('.tag-badge')) return;
@@ -683,10 +717,30 @@
                     window.addEventListener('mouseup', stopDrag);
                 }
 
+                function startDragTouch(e) {
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('.tag-badge')) return;
+                    isDragging.value = true;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    dragOffsetX = touch.clientX - rect.left;
+                    dragOffsetY = touch.clientY - rect.top;
+                    window.addEventListener('touchmove', onDragTouch, { passive: false });
+                    window.addEventListener('touchend', stopDragTouch);
+                }
+
                 function onDrag(e) {
                     if (!isDragging.value) return;
                     panelX.value = e.clientX - dragOffsetX;
                     panelY.value = e.clientY - dragOffsetY;
+                }
+
+                function onDragTouch(e) {
+                    if (!isDragging.value) return;
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    panelX.value = touch.clientX - dragOffsetX;
+                    panelY.value = touch.clientY - dragOffsetY;
                 }
 
                 function stopDrag() {
@@ -695,9 +749,18 @@
                     window.removeEventListener('mouseup', stopDrag);
                 }
 
+                function stopDragTouch() {
+                    isDragging.value = false;
+                    window.removeEventListener('touchmove', onDragTouch);
+                    window.removeEventListener('touchend', stopDragTouch);
+                }
+
                 onBeforeUnmount(() => {
                     window.removeEventListener('mousemove', onDrag);
                     window.removeEventListener('mouseup', stopDrag);
+                    window.removeEventListener('touchmove', onDragTouch);
+                    window.removeEventListener('touchend', stopDragTouch);
+                    window.removeEventListener('resize', setInitialPanelPosition);
                 });
 
                 function getBaseFolder() {
@@ -985,6 +1048,7 @@
                         }
                         applyCollapseState();
                         document.addEventListener('click', handleImageClick);
+                        setInitialPanelPosition();
                     }
                 });
 
@@ -1007,6 +1071,7 @@
                     panelY,
                     isDragging,
                     startDrag,
+                    startDragTouch,
                     escapeHtml,
                     setContentRef,
                     isContentTall,
