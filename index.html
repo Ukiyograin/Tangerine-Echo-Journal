@@ -712,8 +712,6 @@
                 const isDragging = ref(false);
                 let dragOffsetX = 0;
                 let dragOffsetY = 0;
-                let dragStartTime = 0;
-                let hasMoved = false;
 
                 function clampPanelPosition() {
                     const width = 240;
@@ -752,8 +750,6 @@
                 function startDrag(e) {
                     if (e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
-                    hasMoved = false;
-                    dragStartTime = Date.now();
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = e.clientX - rect.left;
                     dragOffsetY = e.clientY - rect.top;
@@ -766,8 +762,6 @@
                     if (!touch) return;
                     if (e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
-                    hasMoved = false;
-                    dragStartTime = Date.now();
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = touch.clientX - rect.left;
                     dragOffsetY = touch.clientY - rect.top;
@@ -777,7 +771,6 @@
 
                 function onDrag(e) {
                     if (!isDragging.value) return;
-                    hasMoved = true;
                     panelX.value = e.clientX - dragOffsetX;
                     panelY.value = e.clientY - dragOffsetY;
                 }
@@ -786,7 +779,6 @@
                     if (!isDragging.value) return;
                     const touch = e.touches[0];
                     if (!touch) return;
-                    hasMoved = true;
                     panelX.value = touch.clientX - dragOffsetX;
                     panelY.value = touch.clientY - dragOffsetY;
                 }
@@ -817,25 +809,6 @@
                     selectedTag.value = selectedTag.value === tag ? null : tag;
                     currentPage.value = 1;
                 }
-
-                watch(selectedTag, () => {
-                    nextTick(() => {
-                        applyCollapseState();
-                    });
-                });
-
-                watch(searchQuery, () => {
-                    currentPage.value = 1;
-                    nextTick(() => {
-                        applyCollapseState();
-                    });
-                });
-
-                watch(paginatedPosts, () => {
-                    nextTick(() => {
-                        applyCollapseState();
-                    });
-                });
 
                 function getBaseFolder() {
                     const path = window.location.pathname;
