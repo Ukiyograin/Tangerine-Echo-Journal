@@ -96,7 +96,6 @@
             padding: 1.5rem 1.2rem;
             border: 1px solid #ffe4bc;
             box-shadow: 0 12px 24px -10px rgba(160, 100, 30, 0.08);
-            backdrop-filter: blur(4px);
             font-size: 0.9rem;
         }
 
@@ -110,6 +109,17 @@
             font-weight: 700;
             border-bottom: 2px dotted #ffd59b;
             padding-bottom: 0.6rem;
+        }
+
+        .tag-cloud-container {
+            max-height: 200px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .tag-cloud-container.expanded {
+            max-height: 500px;
+            overflow-y: auto;
         }
 
         .tag-list {
@@ -133,6 +143,8 @@
             align-items: center;
             gap: 4px;
             user-select: none;
+            max-width: 130px;
+            overflow: hidden;
         }
 
         .tag-badge:hover {
@@ -146,6 +158,45 @@
             border-color: #c96e2b;
             color: white;
             box-shadow: 0 4px 10px rgba(220, 130, 40, 0.25);
+        }
+
+        .tag-text {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .tag-badge:hover .tag-text {
+            animation: marquee 3s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(calc(-100% + 100px));
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        .tag-toggle-btn {
+            display: block;
+            margin: 0.8rem auto 0;
+            background: none;
+            border: 1px dashed #f0b37b;
+            color: #c96e2b;
+            font-size: 0.8rem;
+            padding: 0.3rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tag-toggle-btn:hover {
+            background: #fff3e0;
+            border-color: #f9a65b;
         }
 
         .search-wrap {
@@ -573,14 +624,19 @@
                     </template>
                 </div>
 
-                <aside class="sidebar" v-if="allTags.length">
+                <aside class="sidebar" v-if="sortedTagsWithCount.length">
                     <h3>🏷️ 标签云</h3>
-                    <ul class="tag-list">
-                        <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectedTag = null">🍡 全部</li>
-                        <li class="tag-badge" v-for="tag in allTags" :key="tag" :class="{ 'active-tag': selectedTag === tag }" @click="selectedTag = (selectedTag === tag ? null : tag)">
-                            {{ tag }}
-                        </li>
-                    </ul>
+                    <div class="tag-cloud-container" :class="{ expanded: tagCloudExpanded }">
+                        <ul class="tag-list">
+                            <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectedTag = null">🍡 全部</li>
+                            <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectedTag = (selectedTag === tag.name ? null : tag.name)" :title="tag.name">
+                                <span class="tag-text">{{ tag.name }} ({{ tag.count }})</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="tag-toggle-btn" v-if="sortedTagsWithCount.length > 5" @click="tagCloudExpanded = !tagCloudExpanded">
+                        {{ tagCloudExpanded ? '🍃 收起' : '✨ 展开更多' }}
+                    </button>
                 </aside>
             </div>
 
@@ -609,6 +665,7 @@
                 const expandedMap = reactive({});
                 const contentHeightMap = reactive({});
                 const lightboxImg = ref(null);
+                const tagCloudExpanded = ref(false);
 
                 function getBaseFolder() {
                     const path = window.location.pathname;
@@ -646,7 +703,7 @@
                     return tags;
                 }
 
-                function getRandomIconForFile(filename) {
+                function getDeterministicIcon(filename) {
                     const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
                     let hash = 0;
                     for (let i = 0; i < filename.length; i++) {
@@ -659,14 +716,24 @@
                 function formatDateFromFilename(filename) {
                     const match = filename.match(/_(\d{4})-(\d{2})-(\d{2})\.md$/);
                     if (match) {
-                        return `${match[1]}年${match[2]}月${match[3]}日`;
+                        return {
+                            display: `${match[1]}年${match[2]}月${match[3]}日`,
+                            timestamp: new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3])).getTime()
+                        };
                     }
                     const fallbackMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
                     if (fallbackMatch) {
-                        return `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`;
+                        return {
+                            display: `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`,
+                            timestamp: new Date(parseInt(fallbackMatch[1]), parseInt(fallbackMatch[2]) - 1, parseInt(fallbackMatch[3])).getTime()
+                        };
                     }
-                    const today = new Date();
-                    return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+                    const now = Date.now();
+                    const today = new Date(now);
+                    return {
+                        display: `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`,
+                        timestamp: now
+                    };
                 }
 
                 async function loadMarkdownAndRender(fileName) {
@@ -684,8 +751,8 @@
                         title = name;
                     }
 
-                    const date = formatDateFromFilename(fileName);
-                    const icon = getRandomIconForFile(fileName);
+                    const dateInfo = formatDateFromFilename(fileName);
+                    const icon = getDeterministicIcon(fileName);
                     const tags = parseTagsFromMarkdown(md);
 
                     const lines = md.split(/\r?\n/);
@@ -701,7 +768,15 @@
                     } else {
                         html = `<pre>${escapeHtml(cleanedMd.substring(0,500))}</pre>`;
                     }
-                    return { fileName, title, date, icon, html, tags };
+                    return {
+                        fileName,
+                        title,
+                        date: dateInfo.display,
+                        timestamp: dateInfo.timestamp,
+                        icon,
+                        html,
+                        tags
+                    };
                 }
 
                 async function fetchPosts() {
@@ -737,12 +812,27 @@
                     return loadedPosts;
                 }
 
-                const allTags = computed(() => {
-                    const set = new Set();
+                const sortedTagsWithCount = computed(() => {
+                    const tagMap = {};
                     posts.value.forEach(p => {
-                        if (p.tags) p.tags.forEach(t => set.add(t));
+                        if (p.tags) {
+                            p.tags.forEach(t => {
+                                if (!tagMap[t]) {
+                                    tagMap[t] = { name: t, count: 0, latestTimestamp: 0 };
+                                }
+                                tagMap[t].count++;
+                                if (p.timestamp && p.timestamp > tagMap[t].latestTimestamp) {
+                                    tagMap[t].latestTimestamp = p.timestamp;
+                                }
+                            });
+                        }
                     });
-                    return Array.from(set).sort();
+                    const tagsArray = Object.values(tagMap);
+                    tagsArray.sort((a, b) => {
+                        if (b.latestTimestamp !== a.latestTimestamp) return b.latestTimestamp - a.latestTimestamp;
+                        return a.name.localeCompare(b.name);
+                    });
+                    return tagsArray;
                 });
 
                 const filteredPosts = computed(() => {
@@ -872,13 +962,14 @@
                     searchQuery,
                     selectedTag,
                     currentPage,
-                    allTags,
+                    sortedTagsWithCount,
                     filteredPosts,
                     totalPages,
                     paginatedPosts,
                     visiblePages,
                     expandedMap,
                     lightboxImg,
+                    tagCloudExpanded,
                     escapeHtml,
                     setContentRef,
                     isContentTall,
