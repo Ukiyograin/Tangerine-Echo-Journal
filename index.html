@@ -385,7 +385,6 @@
         .floating-tag-panel {
             position: fixed;
             width: 240px;
-            max-height: 400px;
             background: #fffbf4;
             border: 2px solid #ffe4bc;
             border-radius: 36px 40px 36px 40px;
@@ -396,7 +395,7 @@
             overflow: hidden;
             user-select: none;
             backdrop-filter: blur(6px);
-            transition: box-shadow 0.2s, width 0.2s, max-height 0.2s;
+            transition: opacity 0.2s, visibility 0.2s;
         }
 
         .floating-tag-panel.dragging {
@@ -406,7 +405,7 @@
 
         .panel-header {
             background: #fff8ed;
-            padding: 0.7rem 1.2rem;
+            padding: 0.7rem 1rem;
             border-bottom: 1px solid #ffe1bc;
             cursor: grab;
             display: flex;
@@ -421,15 +420,28 @@
             cursor: grabbing;
         }
 
+        .minimize-btn {
+            background: none;
+            border: none;
+            color: #c96e2b;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            opacity: 0.7;
+            transition: 0.2s;
+        }
+
+        .minimize-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
         .panel-body {
             padding: 0.8rem 1rem;
             overflow-y: auto;
-            max-height: 280px;
-            transition: max-height 0.3s;
-        }
-
-        .panel-body.expanded {
-            max-height: 380px;
+            flex: 1;
+            max-height: 260px;
         }
 
         .tag-list {
@@ -489,22 +501,30 @@
             }
         }
 
-        .panel-toggle {
-            background: none;
-            border-top: 1px dashed #fad7a0;
-            color: #c9813e;
-            font-size: 0.8rem;
-            padding: 0.5rem;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            margin-top: 0.2rem;
+        .minimized-indicator {
+            position: fixed;
+            top: 20px;
+            right: 30px;
             background: #fffbf4;
+            border: 2px solid #ffce96;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-weight: 700;
+            color: #c96e2b;
+            box-shadow: 0 12px 24px -10px rgba(180, 100, 20, 0.15);
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
             transition: 0.2s;
         }
 
-        .panel-toggle:hover {
+        .minimized-indicator:hover {
             background: #fff3e0;
+            border-color: #f9a65b;
+            transform: translateY(-2px);
         }
 
         .lightbox {
@@ -565,19 +585,11 @@
                 padding: 0 1rem;
             }
             .floating-tag-panel {
-                width: 180px;
-                max-height: 320px;
-                right: 10px;
-                bottom: 100px;
-                left: auto;
-                top: auto;
+                width: 200px;
                 border-radius: 28px 32px 28px 32px;
             }
             .panel-body {
-                max-height: 200px;
-            }
-            .panel-body.expanded {
-                max-height: 280px;
+                max-height: 220px;
             }
             .tag-badge {
                 max-width: 100px;
@@ -586,6 +598,12 @@
             .search-wrap {
                 padding: 0.4rem 1rem;
                 margin-bottom: 1.2rem;
+            }
+            .minimized-indicator {
+                top: 16px;
+                right: 16px;
+                padding: 0.3rem 1rem;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -640,12 +658,12 @@
                 </template>
             </div>
 
-            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length" :style="{ left: panelX + 'px', top: panelY + 'px' }" @mousedown="startDrag" @touchstart.prevent="startDragTouch" :class="{ dragging: isDragging }">
+            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length && !isMinimized" :style="{ left: panelX + 'px', top: panelY + 'px' }" @mousedown="startDrag" @touchstart.prevent="startDragTouch" :class="{ dragging: isDragging }">
                 <div class="panel-header">
                     <span>🏷️ 标签云</span>
-                    <span style="font-size:0.7rem; opacity:0.7;">{{ isDragging ? '拖拽中...' : '拖我移动' }}</span>
+                    <button class="minimize-btn" @click="minimizePanel" title="最小化">─</button>
                 </div>
-                <div class="panel-body" :class="{ expanded: tagCloudExpanded }">
+                <div class="panel-body">
                     <ul class="tag-list">
                         <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectedTag = null">🍡 全部</li>
                         <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectedTag = (selectedTag === tag.name ? null : tag.name)" :title="tag.name">
@@ -653,9 +671,10 @@
                         </li>
                     </ul>
                 </div>
-                <button class="panel-toggle" v-if="sortedTagsWithCount.length > 5" @click="tagCloudExpanded = !tagCloudExpanded">
-                    {{ tagCloudExpanded ? '🍃 收起' : '✨ 展开更多' }}
-                </button>
+            </div>
+
+            <div class="minimized-indicator" v-if="sortedTagsWithCount.length && isMinimized" @click="restorePanel">
+                🏷️ 标签云
             </div>
 
             <div class="lightbox" v-if="lightboxImg" @click="lightboxImg = null">
@@ -683,7 +702,7 @@
                 const expandedMap = reactive({});
                 const contentHeightMap = reactive({});
                 const lightboxImg = ref(null);
-                const tagCloudExpanded = ref(false);
+                const isMinimized = ref(false);
 
                 const panelX = ref(window.innerWidth - 260);
                 const panelY = ref(window.innerHeight - 420);
@@ -691,24 +710,43 @@
                 let dragOffsetX = 0;
                 let dragOffsetY = 0;
 
+                function clampPanelPosition() {
+                    const width = 240;
+                    const height = 300; 
+                    const maxX = window.innerWidth - width;
+                    const maxY = window.innerHeight - height;
+                    panelX.value = Math.min(Math.max(panelX.value, 0), maxX);
+                    panelY.value = Math.min(Math.max(panelY.value, 0), maxY);
+                }
+
                 function setInitialPanelPosition() {
                     const width = window.innerWidth;
                     const height = window.innerHeight;
                     if (width <= 680) {
-                        panelX.value = width - 190;
-                        panelY.value = height - 320;
+                        panelX.value = Math.max(0, width - 210);
+                        panelY.value = Math.max(0, height - 340);
                     } else {
-                        panelX.value = width - 260;
-                        panelY.value = height - 420;
+                        panelX.value = Math.max(0, width - 260);
+                        panelY.value = Math.max(0, height - 420);
                     }
+                    clampPanelPosition();
                 }
 
                 window.addEventListener('resize', () => {
-                    setInitialPanelPosition();
+                    clampPanelPosition();
                 });
 
+                function minimizePanel() {
+                    isMinimized.value = true;
+                }
+
+                function restorePanel() {
+                    isMinimized.value = false;
+                    clampPanelPosition();
+                }
+
                 function startDrag(e) {
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('.tag-badge')) return;
+                    if (e.target.classList.contains('minimize-btn') || e.target.closest('.tag-badge')) return;
                     isDragging.value = true;
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = e.clientX - rect.left;
@@ -720,7 +758,7 @@
                 function startDragTouch(e) {
                     const touch = e.touches[0];
                     if (!touch) return;
-                    if (e.target.tagName === 'BUTTON' || e.target.closest('.tag-badge')) return;
+                    if (e.target.classList.contains('minimize-btn') || e.target.closest('.tag-badge')) return;
                     isDragging.value = true;
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = touch.clientX - rect.left;
@@ -747,12 +785,14 @@
                     isDragging.value = false;
                     window.removeEventListener('mousemove', onDrag);
                     window.removeEventListener('mouseup', stopDrag);
+                    clampPanelPosition();
                 }
 
                 function stopDragTouch() {
                     isDragging.value = false;
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
+                    clampPanelPosition();
                 }
 
                 onBeforeUnmount(() => {
@@ -760,7 +800,7 @@
                     window.removeEventListener('mouseup', stopDrag);
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
-                    window.removeEventListener('resize', setInitialPanelPosition);
+                    window.removeEventListener('resize', clampPanelPosition);
                 });
 
                 function getBaseFolder() {
@@ -1066,12 +1106,14 @@
                     visiblePages,
                     expandedMap,
                     lightboxImg,
-                    tagCloudExpanded,
+                    isMinimized,
                     panelX,
                     panelY,
                     isDragging,
                     startDrag,
                     startDragTouch,
+                    minimizePanel,
+                    restorePanel,
                     escapeHtml,
                     setContentRef,
                     isContentTall,
