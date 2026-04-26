@@ -328,16 +328,19 @@
         }
 
         .post-content img {
-            max-width: 100%;
+            display: block;
+            max-width: 320px;
+            width: auto;
+            height: auto;
             border-radius: 28px;
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
-            margin: 1rem 0;
+            margin: 1.2rem auto;
             cursor: zoom-in;
             transition: transform 0.2s;
         }
 
         .post-content img:hover {
-            transform: scale(1.01);
+            transform: scale(1.02);
             filter: brightness(1.02);
         }
 
@@ -685,12 +688,18 @@
                     const icon = getRandomIconForFile(fileName);
                     const tags = parseTagsFromMarkdown(md);
 
+                    const lines = md.split(/\r?\n/);
+                    let cleanedMd = md;
+                    if (lines[0] && /^tag:\s*.+/i.test(lines[0])) {
+                        cleanedMd = lines.slice(1).join('\n');
+                    }
+
                     let html = '';
                     if (typeof marked !== 'undefined') {
-                        html = marked.parse(md);
+                        html = marked.parse(cleanedMd);
                         if (html instanceof Promise) html = await html;
                     } else {
-                        html = `<pre>${escapeHtml(md.substring(0,500))}</pre>`;
+                        html = `<pre>${escapeHtml(cleanedMd.substring(0,500))}</pre>`;
                     }
                     return { fileName, title, date, icon, html, tags };
                 }
