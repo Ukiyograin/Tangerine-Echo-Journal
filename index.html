@@ -414,6 +414,7 @@
             font-weight: 700;
             color: #c96e2b;
             font-size: 0.9rem;
+            touch-action: none;
         }
 
         .panel-header:active {
@@ -426,10 +427,11 @@
             color: #c96e2b;
             font-size: 1.2rem;
             cursor: pointer;
-            padding: 0 4px;
+            padding: 4px 8px;
             line-height: 1;
             opacity: 0.7;
             transition: 0.2s;
+            z-index: 10;
         }
 
         .minimize-btn:hover {
@@ -467,6 +469,7 @@
             max-width: 130px;
             overflow: hidden;
             white-space: nowrap;
+            position: relative;
         }
 
         .tag-badge:hover {
@@ -485,7 +488,6 @@
         .tag-text {
             display: inline-block;
             white-space: nowrap;
-            will-change: transform;
         }
 
         .tag-badge:hover .tag-text {
@@ -497,7 +499,7 @@
                 transform: translateX(0);
             }
             100% {
-                transform: translateX(-100%);
+                transform: translateX(calc(-100% - 20px));
             }
         }
 
@@ -594,6 +596,7 @@
             .tag-badge {
                 max-width: 100px;
                 font-size: 0.7rem;
+                padding: 0.3rem 0.8rem;
             }
             .search-wrap {
                 padding: 0.4rem 1rem;
@@ -658,15 +661,15 @@
                 </template>
             </div>
 
-            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length && !isMinimized" :style="{ left: panelX + 'px', top: panelY + 'px' }" @mousedown="startDrag" @touchstart.prevent="startDragTouch" :class="{ dragging: isDragging }">
-                <div class="panel-header">
+            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length && !isMinimized" :style="{ left: panelX + 'px', top: panelY + 'px' }" :class="{ dragging: isDragging }">
+                <div class="panel-header" @mousedown="startDrag" @touchstart.prevent="startDragTouch">
                     <span>🏷️ 标签云</span>
-                    <button class="minimize-btn" @click="minimizePanel" title="最小化">─</button>
+                    <button class="minimize-btn" @mousedown.stop @touchstart.stop @click="minimizePanel" title="最小化">─</button>
                 </div>
                 <div class="panel-body">
                     <ul class="tag-list">
-                        <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectedTag = null">🍡 全部</li>
-                        <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectedTag = (selectedTag === tag.name ? null : tag.name)" :title="tag.name">
+                        <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectTag(null)">🍡 全部</li>
+                        <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectTag(tag.name)" :title="tag.name">
                             <span class="tag-text">{{ tag.name }} ({{ tag.count }})</span>
                         </li>
                     </ul>
@@ -688,7 +691,7 @@
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, nextTick, reactive, onBeforeUnmount } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick, reactive, onBeforeUnmount, watch } = Vue;
 
         createApp({
             setup() {
@@ -709,12 +712,13 @@
                 const isDragging = ref(false);
                 let dragOffsetX = 0;
                 let dragOffsetY = 0;
+                let dragStartTime = 0;
+                let hasMoved = false;
 
                 function clampPanelPosition() {
                     const width = 240;
-                    const height = 300; 
                     const maxX = window.innerWidth - width;
-                    const maxY = window.innerHeight - height;
+                    const maxY = window.innerHeight - 60;
                     panelX.value = Math.min(Math.max(panelX.value, 0), maxX);
                     panelY.value = Math.min(Math.max(panelY.value, 0), maxY);
                 }
@@ -746,8 +750,10 @@
                 }
 
                 function startDrag(e) {
-                    if (e.target.classList.contains('minimize-btn') || e.target.closest('.tag-badge')) return;
+                    if (e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
+                    hasMoved = false;
+                    dragStartTime = Date.now();
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = e.clientX - rect.left;
                     dragOffsetY = e.clientY - rect.top;
@@ -758,8 +764,10 @@
                 function startDragTouch(e) {
                     const touch = e.touches[0];
                     if (!touch) return;
-                    if (e.target.classList.contains('minimize-btn') || e.target.closest('.tag-badge')) return;
+                    if (e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
+                    hasMoved = false;
+                    dragStartTime = Date.now();
                     const rect = e.currentTarget.getBoundingClientRect();
                     dragOffsetX = touch.clientX - rect.left;
                     dragOffsetY = touch.clientY - rect.top;
@@ -769,6 +777,7 @@
 
                 function onDrag(e) {
                     if (!isDragging.value) return;
+                    hasMoved = true;
                     panelX.value = e.clientX - dragOffsetX;
                     panelY.value = e.clientY - dragOffsetY;
                 }
@@ -777,6 +786,7 @@
                     if (!isDragging.value) return;
                     const touch = e.touches[0];
                     if (!touch) return;
+                    hasMoved = true;
                     panelX.value = touch.clientX - dragOffsetX;
                     panelY.value = touch.clientY - dragOffsetY;
                 }
@@ -801,6 +811,30 @@
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
                     window.removeEventListener('resize', clampPanelPosition);
+                });
+
+                function selectTag(tag) {
+                    selectedTag.value = selectedTag.value === tag ? null : tag;
+                    currentPage.value = 1;
+                }
+
+                watch(selectedTag, () => {
+                    nextTick(() => {
+                        applyCollapseState();
+                    });
+                });
+
+                watch(searchQuery, () => {
+                    currentPage.value = 1;
+                    nextTick(() => {
+                        applyCollapseState();
+                    });
+                });
+
+                watch(paginatedPosts, () => {
+                    nextTick(() => {
+                        applyCollapseState();
+                    });
                 });
 
                 function getBaseFolder() {
@@ -1114,6 +1148,7 @@
                     startDragTouch,
                     minimizePanel,
                     restorePanel,
+                    selectTag,
                     escapeHtml,
                     setContentRef,
                     isContentTall,
