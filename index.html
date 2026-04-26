@@ -4,55 +4,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
+    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js">
+    </script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             background: #fef7e8;
             background-image: radial-gradient(circle at 10% 20%, rgba(255, 235, 205, 0.6) 2%, transparent 2.5%),
-                              radial-gradient(circle at 85% 70%, rgba(255, 215, 170, 0.5) 1.5%, transparent 2%);
+                radial-gradient(circle at 85% 70%, rgba(255, 215, 170, 0.5) 1.5%, transparent 2%);
             background-size: 48px 48px, 32px 32px;
             font-family: 'Segoe UI', 'Noto Sans CJK JP', 'Helvetica Neue', 'Poppins', system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
             color: #3e2a1f;
             line-height: 1.6;
             padding: 2rem 1.5rem;
         }
+
         .container {
-            max-width: 1100px;
+            max-width: 1300px;
             margin: 0 auto;
         }
+
         header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             position: relative;
         }
+
         .flowing-text {
             font-size: 2.6rem;
             font-weight: 700;
             letter-spacing: 2px;
             margin-top: 0.5rem;
             display: inline-block;
-            background: linear-gradient(270deg, 
-                #FF6B6B, #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B,
-                #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B);
+            background: linear-gradient(270deg,
+                    #FF6B6B, #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B,
+                    #FFA07A, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B);
             background-size: 500% auto;
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
             animation: flowFullColor 20s linear infinite;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
+
         @keyframes flowFullColor {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 500% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 500% 50%;
+            }
         }
+
         .sub {
             color: #c2834b;
             font-size: 0.95rem;
@@ -61,24 +74,135 @@
             padding-top: 0.5rem;
             margin-top: 0.5rem;
         }
+
+        .main-layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .content-area {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 1rem;
+            background: #fffbf4;
+            border-radius: 48px 36px 48px 36px;
+            padding: 1.5rem 1.2rem;
+            border: 1px solid #ffe4bc;
+            box-shadow: 0 12px 24px -10px rgba(160, 100, 30, 0.08);
+            backdrop-filter: blur(4px);
+            font-size: 0.9rem;
+        }
+
+        .sidebar h3 {
+            color: #c96e2b;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            border-bottom: 2px dotted #ffd59b;
+            padding-bottom: 0.6rem;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .tag-badge {
+            background: #fff3e0;
+            border: 1px solid #ffcb8c;
+            color: #864c24;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+        }
+
+        .tag-badge:hover {
+            background: #ffe5cc;
+            border-color: #ffb652;
+            transform: scale(1.02);
+        }
+
+        .tag-badge.active-tag {
+            background: #f9a65b;
+            border-color: #c96e2b;
+            color: white;
+            box-shadow: 0 4px 10px rgba(220, 130, 40, 0.25);
+        }
+
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #fffbf4;
+            border: 1px solid #ffdeac;
+            border-radius: 48px;
+            padding: 0.5rem 1.2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: 0 6px 18px -8px rgba(180, 110, 30, 0.08);
+            transition: 0.2s;
+        }
+
+        .search-wrap:focus-within {
+            border-color: #f9a65b;
+            box-shadow: 0 8px 20px -8px rgba(200, 100, 20, 0.15);
+        }
+
+        .search-wrap input {
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            padding: 0.4rem 0;
+            outline: none;
+            width: 100%;
+            color: #5e3a20;
+            font-family: inherit;
+        }
+
+        .search-wrap .search-icon {
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
         .blog-grid {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
+
         .post-card {
             background: #fffaf2;
             border-radius: 42px 32px 48px 32px;
-            box-shadow: 0 18px 32px -12px rgba(100, 60, 10, 0.12), 0 2px 5px rgba(0,0,0,0.02);
+            box-shadow: 0 18px 32px -12px rgba(100, 60, 10, 0.12), 0 2px 5px rgba(0, 0, 0, 0.02);
             transition: all 0.25s ease;
             border: 1px solid #ffe1b9;
             overflow: hidden;
         }
+
         .post-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 24px 40px -16px rgba(180, 90, 30, 0.2);
             border-color: #ffce96;
         }
+
         .post-header {
             padding: 1.6rem 2rem 0.8rem 2rem;
             border-bottom: 2px dashed #ffe0bc;
@@ -87,9 +211,11 @@
             flex-wrap: wrap;
             gap: 0.8rem;
         }
+
         .post-icon {
             font-size: 2rem;
         }
+
         .post-title {
             font-size: 1.9rem;
             font-weight: 700;
@@ -101,6 +227,7 @@
             -webkit-background-clip: text;
             color: transparent;
         }
+
         .post-meta {
             padding: 0.2rem 2rem 0rem 2rem;
             font-size: 0.8rem;
@@ -110,6 +237,7 @@
             align-items: center;
             flex-wrap: wrap;
         }
+
         .meta-item {
             display: inline-flex;
             align-items: center;
@@ -118,12 +246,75 @@
             padding: 4px 12px;
             border-radius: 40px;
         }
+
+        .post-tags {
+            padding: 0.2rem 2rem 0rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.3rem;
+        }
+
+        .post-tag {
+            background: #ffe9d4;
+            color: #9b5723;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
         .post-content {
             padding: 1.8rem 2rem 2rem 2rem;
             font-size: 1rem;
             color: #382617;
+            position: relative;
+            transition: max-height 0.35s ease;
         }
-        .post-content h1, .post-content h2, .post-content h3 {
+
+        .post-content.collapsed {
+            max-height: 380px;
+            overflow: hidden;
+        }
+
+        .post-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: linear-gradient(to top, #fffaf2, transparent);
+            pointer-events: none;
+            border-radius: 0 0 32px 32px;
+        }
+
+        .expand-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #ffecd0;
+            border: 1px solid #ffc68c;
+            color: #b05a1f;
+            padding: 0.4rem 1.6rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            margin-left: 2rem;
+            margin-bottom: 1.4rem;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .expand-btn:hover {
+            background: #ffd59b;
+            border-color: #f49b41;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3 {
             margin-top: 1.2em;
             margin-bottom: 0.6em;
             font-weight: 650;
@@ -131,15 +322,25 @@
             border-left: 6px solid #ffbc6e;
             padding-left: 1rem;
         }
+
         .post-content p {
             margin-bottom: 1rem;
         }
+
         .post-content img {
             max-width: 100%;
             border-radius: 28px;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
             margin: 1rem 0;
+            cursor: zoom-in;
+            transition: transform 0.2s;
         }
+
+        .post-content img:hover {
+            transform: scale(1.01);
+            filter: brightness(1.02);
+        }
+
         .post-content code {
             background: #fcedda;
             padding: 0.2rem 0.4rem;
@@ -148,6 +349,7 @@
             font-size: 0.9em;
             color: #b9531a;
         }
+
         .post-content pre {
             background: #2d2118;
             padding: 1rem;
@@ -155,11 +357,13 @@
             overflow-x: auto;
             margin: 1.2rem 0;
         }
+
         .post-content pre code {
             background: transparent;
             color: #fbe3c9;
             padding: 0;
         }
+
         .post-content blockquote {
             border-left: 4px solid #f3a257;
             background: #fff3e6;
@@ -169,21 +373,26 @@
             font-style: italic;
             color: #794f2a;
         }
+
         .post-content a {
             color: #e0772e;
             text-decoration: none;
             border-bottom: 1px dashed #ffb469;
         }
+
         .post-content a:hover {
             color: #bc5a1a;
         }
-        .loading-area, .empty-area {
+
+        .loading-area,
+        .empty-area {
             background: #fff6ed;
             border-radius: 64px;
             padding: 3rem 2rem;
             text-align: center;
             border: 1px solid #ffe0bd;
         }
+
         .spinner {
             display: inline-block;
             width: 48px;
@@ -193,7 +402,79 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 2.8rem;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background: #fff6ed;
+            border: 1px solid #ffd19a;
+            color: #9b5723;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .page-btn:hover {
+            background: #ffe2c1;
+            border-color: #f49b41;
+        }
+
+        .page-btn.active-page {
+            background: #f49b41;
+            border-color: #c96c1f;
+            color: white;
+            box-shadow: 0 6px 14px rgba(200, 90, 20, 0.25);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: zoom-out;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 32px;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.3);
+            cursor: default;
+        }
+
         footer {
             text-align: center;
             margin-top: 4rem;
@@ -202,206 +483,400 @@
             color: #c3844b;
             border-top: 1px solid #ffe1bb;
         }
+
         .deco-leaf {
             font-size: 1.2rem;
             opacity: 0.6;
         }
-        @media (max-width: 680px) {
-            body { padding: 1rem; }
-            .post-title { font-size: 1.5rem; }
-            .post-header { padding: 1rem 1.2rem; }
-            .post-content { padding: 1.2rem; }
-            .post-meta { padding: 0 1rem; }
-            .flowing-text { font-size: 2rem; }
+
+        @media (max-width: 780px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+                order: -1;
+                margin-bottom: 1rem;
+                border-radius: 36px;
+            }
+            .post-title {
+                font-size: 1.5rem;
+            }
+            .post-header {
+                padding: 1rem 1.2rem;
+            }
+            .post-content {
+                padding: 1.2rem;
+            }
+            .post-meta,
+            .post-tags {
+                padding: 0 1rem;
+            }
+            .flowing-text {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1 class="flowing-text">柑音手帐</h1>
-        <div class="sub">✦ Tangerine Echo Journal ✦</div>
-    </header>
-    
-    <div id="app">
-        <div class="blog-grid">
-            <div v-if="loading" class="loading-area">
-                <div class="spinner"></div>
-                <div style="margin-top: 1.2rem;">翻开书页 寻找文章…… 📖✨</div>
-            </div>
-            <div v-else-if="error" class="empty-area">
-                {{ error }}
-            </div>
-            <template v-else>
-                <article v-for="post in posts" :key="post.fileName" class="post-card">
-                    <div class="post-header">
-                        <span class="post-icon">{{ post.icon }}</span>
-                        <h2 class="post-title" v-html="escapeHtml(post.title)"></h2>
+    <div class="container">
+        <header>
+            <h1 class="flowing-text">柑音手帐</h1>
+            <div class="sub">✦ Tangerine Echo Journal ✦</div>
+        </header>
+
+        <div id="app">
+            <div class="main-layout">
+                <div class="content-area">
+                    <div class="search-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" v-model="searchQuery" placeholder="搜文章或标签喵…" />
                     </div>
-                    <div class="post-meta">
-                        <span class="meta-item">📅 {{ post.date }}</span>
+                    <div v-if="loading" class="loading-area">
+                        <div class="spinner"></div>
+                        <div style="margin-top:1.2rem;">翻开书页 寻找文章…… 📖✨</div>
                     </div>
-                    <div class="post-content" v-html="post.html"></div>
-                </article>
-            </template>
+                    <div v-else-if="error" class="empty-area">
+                        {{ error }}
+                    </div>
+                    <template v-else>
+                        <div class="blog-grid">
+                            <article v-for="post in paginatedPosts" :key="post.fileName" class="post-card">
+                                <div class="post-header">
+                                    <span class="post-icon">{{ post.icon }}</span>
+                                    <h2 class="post-title" v-html="escapeHtml(post.title)"></h2>
+                                </div>
+                                <div class="post-meta">
+                                    <span class="meta-item">📅 {{ post.date }}</span>
+                                </div>
+                                <div class="post-tags" v-if="post.tags && post.tags.length">
+                                    <span class="post-tag" v-for="tag in post.tags" :key="tag">🏷️ {{ tag }}</span>
+                                </div>
+                                <div class="post-content" :ref="setContentRef(post.fileName)" v-html="post.html"></div>
+                                <button class="expand-btn" v-if="isContentTall(post.fileName)" @click="toggleExpand(post.fileName)">
+                                    <span v-if="!expandedMap[post.fileName]">✨ 展开全文</span>
+                                    <span v-else>🍃 收起来</span>
+                                </button>
+                            </article>
+                        </div>
+                        <div class="pagination" v-if="totalPages > 1">
+                            <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage = 1">«</button>
+                            <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage--">‹</button>
+                            <button class="page-btn" v-for="page in visiblePages" :key="page" :class="{ 'active-page': page === currentPage }" @click="currentPage = page">{{ page }}</button>
+                            <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage++">›</button>
+                            <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = totalPages">»</button>
+                        </div>
+                    </template>
+                </div>
+
+                <aside class="sidebar" v-if="allTags.length">
+                    <h3>🏷️ 标签云</h3>
+                    <ul class="tag-list">
+                        <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectedTag = null">🍡 全部</li>
+                        <li class="tag-badge" v-for="tag in allTags" :key="tag" :class="{ 'active-tag': selectedTag === tag }" @click="selectedTag = (selectedTag === tag ? null : tag)">
+                            {{ tag }}
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+
+            <div class="lightbox" v-if="lightboxImg" @click="lightboxImg = null">
+                <img :src="lightboxImg" @click.stop />
+            </div>
         </div>
+
+        <footer>
+            <span class="deco-leaf">🍃 🍂 🍁</span> · 柑音手账 · <span class="deco-leaf">🌸 🍡 🎐</span>
+        </footer>
     </div>
-    
-    <footer>
-        <span class="deco-leaf">🍃  🍂  🍁</span>  ·  柑音手账  ·  <span class="deco-leaf">🌸  🍡  🎐</span>
-    </footer>
-</div>
 
-<script>
-    const { createApp, ref, onMounted, nextTick } = Vue;
+    <script>
+        const { createApp, ref, computed, onMounted, nextTick, reactive } = Vue;
 
-    createApp({
-        setup() {
-            const loading = ref(true);
-            const error = ref('');
-            const posts = ref([]);
+        createApp({
+            setup() {
+                const loading = ref(true);
+                const error = ref('');
+                const posts = ref([]);
+                const searchQuery = ref('');
+                const selectedTag = ref(null);
+                const currentPage = ref(1);
+                const postsPerPage = 5;
+                const expandedMap = reactive({});
+                const contentHeightMap = reactive({});
+                const lightboxImg = ref(null);
 
-            function getBaseFolder() {
-                const path = window.location.pathname;
-                if (path.endsWith('/')) return path;
-                const lastSlash = path.lastIndexOf('/');
-                return path.substring(0, lastSlash + 1);
-            }
+                function getBaseFolder() {
+                    const path = window.location.pathname;
+                    if (path.endsWith('/')) return path;
+                    const lastSlash = path.lastIndexOf('/');
+                    return path.substring(0, lastSlash + 1);
+                }
 
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
+                function escapeHtml(str) {
+                    if (!str) return '';
+                    return str.replace(/[&<>]/g, function(m) {
+                        if (m === '&') return '&amp;';
+                        if (m === '<') return '&lt;';
+                        if (m === '>') return '&gt;';
+                        return m;
+                    });
+                }
 
-            function extractTitleFromMarkdown(mdContent) {
-                const lines = mdContent.split(/\r?\n/);
-                for (let line of lines) {
-                    if (line.startsWith('# ')) {
-                        return line.substring(2).trim();
+                function extractTitleFromMarkdown(mdContent) {
+                    const lines = mdContent.split(/\r?\n/);
+                    for (let line of lines) {
+                        if (line.startsWith('# ')) {
+                            return line.substring(2).trim();
+                        }
                     }
+                    return null;
                 }
-                return null;
-            }
 
-            function getRandomIconForFile(filename) {
-                const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
-                let hash = 0;
-                for (let i = 0; i < filename.length; i++) {
-                    hash = ((hash << 5) - hash) + filename.charCodeAt(i);
-                    hash |= 0;
+                function parseTagsFromMarkdown(mdContent) {
+                    const firstLine = mdContent.split(/\r?\n/)[0] || '';
+                    const match = firstLine.match(/^tag:\s*(.+)/i);
+                    if (!match) return [];
+                    const raw = match[1];
+                    const tags = raw.split(/[,，]/).map(t => t.trim()).filter(Boolean);
+                    return tags;
                 }
-                return icons[Math.abs(hash) % icons.length];
-            }
 
-            function formatDateFromFilename(filename) {
-                const match = filename.match(/_(\d{4})-(\d{2})-(\d{2})\.md$/);
-                if (match) {
-                    return `${match[1]}年${match[2]}月${match[3]}日`;
-                }
-                const fallbackMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
-                if (fallbackMatch) {
-                    return `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`;
-                }
-                const today = new Date();
-                return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
-            }
-
-            async function loadMarkdownAndRender(fileName) {
-                const base = getBaseFolder();
-                const url = `${base}docs/${fileName}`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`无法加载 ${fileName}`);
-                const md = await res.text();
-                
-                let title = extractTitleFromMarkdown(md);
-                if (!title) {
-                    let name = fileName.replace(/\.md$/, '');
-                    name = name.replace(/_[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '');
-                    name = name.replace(/[-_]/g, ' ');
-                    title = name;
-                }
-                
-                const date = formatDateFromFilename(fileName);
-                const icon = getRandomIconForFile(fileName);
-                
-                let html = '';
-                if (typeof marked !== 'undefined') {
-                    html = marked.parse(md);
-                    if (html instanceof Promise) html = await html;
-                } else {
-                    html = `<pre>${escapeHtml(md.substring(0, 500))}</pre>`;
-                }
-                return { fileName, title, date, icon, html };
-            }
-
-            async function fetchPosts() {
-                const base = getBaseFolder();
-                const listUrl = `${base}docs/list.txt`;
-                let fileNames = [];
-                try {
-                    const res = await fetch(listUrl);
-                    if (!res.ok) {
-                        throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
+                function getRandomIconForFile(filename) {
+                    const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
+                    let hash = 0;
+                    for (let i = 0; i < filename.length; i++) {
+                        hash = ((hash << 5) - hash) + filename.charCodeAt(i);
+                        hash |= 0;
                     }
-                    const text = await res.text();
-                    fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
-                    if (fileNames.length === 0) {
-                        throw new Error('list.txt 中没有 .md 文件');
-                    }
-                } catch (err) {
-                    throw new Error(`读取列表失败: ${err.message}`);
+                    return icons[Math.abs(hash) % icons.length];
                 }
 
-                const loadedPosts = [];
-                for (const fileName of fileNames) {
+                function formatDateFromFilename(filename) {
+                    const match = filename.match(/_(\d{4})-(\d{2})-(\d{2})\.md$/);
+                    if (match) {
+                        return `${match[1]}年${match[2]}月${match[3]}日`;
+                    }
+                    const fallbackMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
+                    if (fallbackMatch) {
+                        return `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`;
+                    }
+                    const today = new Date();
+                    return `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+                }
+
+                async function loadMarkdownAndRender(fileName) {
+                    const base = getBaseFolder();
+                    const url = `${base}docs/${fileName}`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`无法加载 ${fileName}`);
+                    const md = await res.text();
+
+                    let title = extractTitleFromMarkdown(md);
+                    if (!title) {
+                        let name = fileName.replace(/\.md$/, '');
+                        name = name.replace(/_[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '');
+                        name = name.replace(/[-_]/g, ' ');
+                        title = name;
+                    }
+
+                    const date = formatDateFromFilename(fileName);
+                    const icon = getRandomIconForFile(fileName);
+                    const tags = parseTagsFromMarkdown(md);
+
+                    let html = '';
+                    if (typeof marked !== 'undefined') {
+                        html = marked.parse(md);
+                        if (html instanceof Promise) html = await html;
+                    } else {
+                        html = `<pre>${escapeHtml(md.substring(0,500))}</pre>`;
+                    }
+                    return { fileName, title, date, icon, html, tags };
+                }
+
+                async function fetchPosts() {
+                    const base = getBaseFolder();
+                    const listUrl = `${base}docs/list.txt`;
+                    let fileNames = [];
                     try {
-                        const post = await loadMarkdownAndRender(fileName);
-                        loadedPosts.push(post);
+                        const res = await fetch(listUrl);
+                        if (!res.ok) {
+                            throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
+                        }
+                        const text = await res.text();
+                        fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
+                        if (fileNames.length === 0) {
+                            throw new Error('list.txt 中没有 .md 文件');
+                        }
                     } catch (err) {
-                        console.warn(`跳过文件 ${fileName}:`, err);
+                        throw new Error(`读取列表失败: ${err.message}`);
                     }
-                }
-                if (loadedPosts.length === 0) {
-                    throw new Error('没有成功加载任何文章，请检查 .md 文件是否存在');
-                }
-                return loadedPosts;
-            }
 
-            onMounted(async () => {
-                if (typeof marked === 'undefined') {
-                    error.value = 'Markdown 解析库加载失败，请刷新页面重试';
-                    loading.value = false;
-                    return;
+                    const loadedPosts = [];
+                    for (const fileName of fileNames) {
+                        try {
+                            const post = await loadMarkdownAndRender(fileName);
+                            loadedPosts.push(post);
+                        } catch (err) {
+                            console.warn(`跳过文件 ${fileName}:`, err);
+                        }
+                    }
+                    if (loadedPosts.length === 0) {
+                        throw new Error('没有成功加载任何文章，请检查 .md 文件是否存在');
+                    }
+                    return loadedPosts;
                 }
-                try {
-                    const data = await fetchPosts();
-                    posts.value = data;
-                } catch (err) {
-                    error.value = err.message || '加载文章失败，请确保 docs 目录和 list.txt 配置正确';
-                } finally {
-                    loading.value = false;
-                    await nextTick();
-                    if (typeof hljs !== 'undefined') {
-                        document.querySelectorAll('.post-content pre code').forEach((block) => {
-                            hljs.highlightElement(block);
+
+                const allTags = computed(() => {
+                    const set = new Set();
+                    posts.value.forEach(p => {
+                        if (p.tags) p.tags.forEach(t => set.add(t));
+                    });
+                    return Array.from(set).sort();
+                });
+
+                const filteredPosts = computed(() => {
+                    let result = posts.value;
+                    if (selectedTag.value) {
+                        result = result.filter(p => p.tags && p.tags.includes(selectedTag.value));
+                    }
+                    const q = searchQuery.value.trim().toLowerCase();
+                    if (q) {
+                        result = result.filter(p => {
+                            const nameMatch = p.fileName.toLowerCase().includes(q);
+                            const tagMatch = p.tags ? p.tags.some(t => t.toLowerCase().includes(q)) : false;
+                            return nameMatch || tagMatch;
                         });
                     }
-                }
-            });
+                    return result;
+                });
 
-            return {
-                loading,
-                error,
-                posts,
-                escapeHtml
-            };
-        }
-    }).mount('#app');
-</script>
+                const totalPages = computed(() => Math.ceil(filteredPosts.value.length / postsPerPage) || 1);
+
+                const paginatedPosts = computed(() => {
+                    const start = (currentPage.value - 1) * postsPerPage;
+                    return filteredPosts.value.slice(start, start + postsPerPage);
+                });
+
+                const visiblePages = computed(() => {
+                    const total = totalPages.value;
+                    const current = currentPage.value;
+                    const maxVisible = 5;
+                    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+                    let end = Math.min(total, start + maxVisible - 1);
+                    if (end - start + 1 < maxVisible) {
+                        start = Math.max(1, end - maxVisible + 1);
+                    }
+                    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+                });
+
+                const contentRefs = {};
+
+                function setContentRef(fileName) {
+                    return (el) => {
+                        if (el) contentRefs[fileName] = el;
+                    };
+                }
+
+                function checkContentHeight(fileName) {
+                    const el = contentRefs[fileName];
+                    if (!el) return;
+                    const maxH = 380;
+                    const tall = el.scrollHeight > maxH + 20;
+                    contentHeightMap[fileName] = tall;
+                    if (tall && expandedMap[fileName] === undefined) {
+                        expandedMap[fileName] = false;
+                    }
+                }
+
+                function isContentTall(fileName) {
+                    return contentHeightMap[fileName] === true;
+                }
+
+                function toggleExpand(fileName) {
+                    expandedMap[fileName] = !expandedMap[fileName];
+                    nextTick(() => {
+                        const el = contentRefs[fileName];
+                        if (el) {
+                            if (expandedMap[fileName]) {
+                                el.classList.remove('collapsed');
+                            } else {
+                                el.classList.add('collapsed');
+                            }
+                        }
+                    });
+                }
+
+                function applyCollapseState() {
+                    Object.keys(contentRefs).forEach(fileName => {
+                        const el = contentRefs[fileName];
+                        if (!el) return;
+                        checkContentHeight(fileName);
+                        if (contentHeightMap[fileName]) {
+                            if (!expandedMap[fileName]) {
+                                el.classList.add('collapsed');
+                            } else {
+                                el.classList.remove('collapsed');
+                            }
+                        } else {
+                            el.classList.remove('collapsed');
+                        }
+                    });
+                }
+
+                function handleImageClick(e) {
+                    const target = e.target;
+                    if (target.tagName === 'IMG' && target.closest('.post-content')) {
+                        lightboxImg.value = target.src;
+                    }
+                }
+
+                onMounted(async () => {
+                    if (typeof marked === 'undefined') {
+                        error.value = 'Markdown 解析库加载失败，请刷新页面重试';
+                        loading.value = false;
+                        return;
+                    }
+                    try {
+                        const data = await fetchPosts();
+                        posts.value = data;
+                    } catch (err) {
+                        error.value = err.message || '加载文章失败，请确保 docs 目录和 list.txt 配置正确';
+                    } finally {
+                        loading.value = false;
+                        await nextTick();
+                        if (typeof hljs !== 'undefined') {
+                            document.querySelectorAll('.post-content pre code').forEach((block) => {
+                                hljs.highlightElement(block);
+                            });
+                        }
+                        applyCollapseState();
+                        document.addEventListener('click', handleImageClick);
+                    }
+                });
+
+                return {
+                    loading,
+                    error,
+                    posts,
+                    searchQuery,
+                    selectedTag,
+                    currentPage,
+                    allTags,
+                    filteredPosts,
+                    totalPages,
+                    paginatedPosts,
+                    visiblePages,
+                    expandedMap,
+                    lightboxImg,
+                    escapeHtml,
+                    setContentRef,
+                    isContentTall,
+                    toggleExpand,
+                };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
