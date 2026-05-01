@@ -19,19 +19,28 @@
         }
 
         body {
-            background: #fef7e8;
-            background-image: radial-gradient(circle at 10% 20%, rgba(255, 235, 205, 0.6) 2%, transparent 2.5%),
-                radial-gradient(circle at 85% 70%, rgba(255, 215, 170, 0.5) 1.5%, transparent 2%);
-            background-size: 48px 48px, 32px 32px;
+            /* ✨ 改用 background.png 作为背景，保留暖色fallback */
+            background: #fef7e8 url('background.png') center/cover no-repeat fixed;
             font-family: 'Segoe UI', 'Noto Sans CJK JP', 'Helvetica Neue', 'Poppins', system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
             color: #3e2a1f;
             line-height: 1.6;
             padding: 2rem 1.5rem;
+            /* 在背景图加载前显示暖色底 */
+            background-color: #fef7e8;
+            /* 如果图片较小，用cover填满；如果图片是纹理则可用repeat */
+            /* 用户可按需调整 background-size */
         }
 
         .container {
             max-width: 1100px;
             margin: 0 auto;
+            /* 给内容区加一层半透明暖色底衬，让文字在图片上清晰可读 */
+            background: rgba(255, 250, 242, 0.72);
+            border-radius: 36px;
+            padding: 1.8rem 2rem;
+            box-shadow: 0 8px 40px -12px rgba(100, 60, 20, 0.10);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
         }
 
         header {
@@ -55,6 +64,10 @@
             color: transparent;
             animation: flowFullColor 20s linear infinite;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            /* 🚀 GPU加速提示 */
+            will-change: background-position;
+            /* 使用transform3d触发GPU合成层，减轻重绘压力 */
+            transform: translate3d(0, 0, 0);
         }
 
         @keyframes flowFullColor {
@@ -85,7 +98,8 @@
             padding: 0.5rem 1.2rem;
             margin-bottom: 1.8rem;
             box-shadow: 0 6px 18px -8px rgba(180, 110, 30, 0.08);
-            transition: 0.2s;
+            /* 🚀 只过渡需要的属性 */
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .search-wrap:focus-within {
@@ -119,9 +133,12 @@
             background: #fffaf2;
             border-radius: 42px 32px 48px 32px;
             box-shadow: 0 18px 32px -12px rgba(100, 60, 10, 0.12), 0 2px 5px rgba(0, 0, 0, 0.02);
-            transition: all 0.25s ease;
+            /* 🚀 只过渡transform和阴影，避免all带来的布局重计算 */
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
             border: 1px solid #ffe1b9;
             overflow: hidden;
+            /* 🚀 GPU加速提示 */
+            will-change: transform;
         }
 
         .post-card:hover {
@@ -230,7 +247,8 @@
             margin-top: 0.8rem;
             margin-left: 2rem;
             margin-bottom: 1.4rem;
-            transition: 0.2s;
+            /* 🚀 具体过渡属性 */
+            transition: background 0.2s, border-color 0.2s;
             font-weight: 600;
         }
 
@@ -263,7 +281,9 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
             margin: 1.2rem auto;
             cursor: zoom-in;
+            /* 🚀 只过渡transform */
             transition: transform 0.2s;
+            will-change: transform;
         }
 
         .post-content img:hover {
@@ -331,6 +351,8 @@
             border-top: 4px solid #e97c2b;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            /* 🚀 spinner使用transform，已是GPU友好 */
+            will-change: transform;
         }
 
         @keyframes spin {
@@ -360,7 +382,8 @@
             justify-content: center;
             cursor: pointer;
             font-weight: 600;
-            transition: 0.2s;
+            /* 🚀 具体过渡属性 */
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
             font-size: 0.9rem;
         }
 
@@ -382,6 +405,7 @@
             pointer-events: none;
         }
 
+        /* ========== 浮动标签面板 ========== */
         .floating-tag-panel {
             position: fixed;
             width: 240px;
@@ -394,13 +418,17 @@
             flex-direction: column;
             overflow: hidden;
             user-select: none;
-            backdrop-filter: blur(6px);
-            transition: opacity 0.2s, visibility 0.2s;
+            /* 🚀 移除 backdrop-filter: blur(6px) —— 这是性能杀手！ */
+            transition: opacity 0.2s, visibility 0.2s, box-shadow 0.2s;
+            /* GPU加速 */
+            will-change: transform, left, top;
         }
 
         .floating-tag-panel.dragging {
             box-shadow: 0 25px 45px -10px rgba(200, 120, 30, 0.3);
             cursor: grabbing;
+            /* 拖拽时降低过渡以避免延迟感 */
+            transition: box-shadow 0.15s;
         }
 
         .panel-header {
@@ -430,7 +458,7 @@
             padding: 4px 8px;
             line-height: 1;
             opacity: 0.7;
-            transition: 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
             z-index: 10;
         }
 
@@ -453,6 +481,7 @@
             list-style: none;
         }
 
+        /* ========== 🏷️ 标签徽章 —— 修复marquee滚动 ========== */
         .tag-badge {
             background: #fff3e0;
             border: 1px solid #ffcb8c;
@@ -461,12 +490,14 @@
             border-radius: 40px;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: 0.2s;
+            /* 🚀 具体过渡 */
+            transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 4px;
             max-width: 130px;
+            /* 🔑 关键：隐藏溢出，配合marquee动画裁剪文字 */
             overflow: hidden;
             white-space: nowrap;
             position: relative;
@@ -488,21 +519,33 @@
         .tag-text {
             display: inline-block;
             white-space: nowrap;
+            /* 🔑 GPU加速的transform动画 */
+            will-change: transform;
         }
 
+        /* 🔑 修复后的marquee：文字从右边出现，完全滚出左边，循环往复 */
         .tag-badge:hover .tag-text {
-            animation: marquee 3s linear infinite;
+            /*
+            * 动画说明：
+            * - 文字从正常位置(translateX=0)开始
+            * - 向左移动自身宽度+150px，确保完全移出可视区域
+            * - 动画循环时瞬间回到起始位置，视觉上"从右边重新出现"
+            * - 对于130px宽的容器，150px的额外距离足够覆盖任何合理长度的标签文字
+            */
+            animation: marquee 3.5s linear infinite;
         }
 
         @keyframes marquee {
             0% {
                 transform: translateX(0);
             }
+            /* 文字完全移出左边：自身100%宽度 + 额外150px安全距离 */
             100% {
-                transform: translateX(calc(-100% - 20px));
+                transform: translateX(calc(-100% - 150px));
             }
         }
 
+        /* ========== 最小化指示器 ========== */
         .minimized-indicator {
             position: fixed;
             top: 20px;
@@ -520,7 +563,9 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            transition: 0.2s;
+            /* 🚀 具体过渡 */
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+            will-change: transform;
         }
 
         .minimized-indicator:hover {
@@ -529,19 +574,22 @@
             transform: translateY(-2px);
         }
 
+        /* ========== 灯箱 ========== */
         .lightbox {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
+            /* 🚀 移除 backdrop-filter: blur(8px)，用更深的半透明背景替代 */
+            background: rgba(0, 0, 0, 0.82);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             cursor: zoom-out;
+            /* GPU加速 */
+            will-change: opacity;
         }
 
         .lightbox img {
@@ -550,6 +598,8 @@
             border-radius: 32px;
             box-shadow: 0 24px 50px rgba(0, 0, 0, 0.3);
             cursor: default;
+            /* 🚀 GPU加速 */
+            will-change: transform;
         }
 
         footer {
@@ -566,47 +616,57 @@
             opacity: 0.6;
         }
 
+        /* ========== 📱 移动端适配 ========== */
         @media (max-width: 680px) {
             body {
+                padding: 0.6rem 0.4rem;
+            }
+            .container {
+                border-radius: 24px;
                 padding: 1rem 0.8rem;
+                backdrop-filter: blur(1px);
+                -webkit-backdrop-filter: blur(1px);
             }
             .flowing-text {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             .post-title {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
             }
             .post-header {
-                padding: 1rem 1.2rem;
+                padding: 1rem 1rem;
             }
             .post-content {
-                padding: 1.2rem;
+                padding: 1rem 1rem;
             }
             .post-meta,
             .post-tags {
                 padding: 0 1rem;
             }
             .floating-tag-panel {
-                width: 200px;
+                width: 190px;
                 border-radius: 28px 32px 28px 32px;
             }
             .panel-body {
-                max-height: 220px;
+                max-height: 200px;
             }
             .tag-badge {
                 max-width: 100px;
                 font-size: 0.7rem;
-                padding: 0.3rem 0.8rem;
+                padding: 0.3rem 0.7rem;
             }
             .search-wrap {
-                padding: 0.4rem 1rem;
-                margin-bottom: 1.2rem;
+                padding: 0.4rem 0.9rem;
+                margin-bottom: 1rem;
             }
             .minimized-indicator {
-                top: 16px;
-                right: 16px;
-                padding: 0.3rem 1rem;
-                font-size: 0.8rem;
+                top: 12px;
+                right: 10px;
+                padding: 0.3rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            .post-content img {
+                max-width: 240px;
             }
         }
     </style>
