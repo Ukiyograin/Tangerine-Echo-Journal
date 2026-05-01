@@ -8,11 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
         }
 
         body {
@@ -22,6 +27,7 @@
             line-height: 1.6;
             padding: 2rem 1.5rem;
             background-color: #fef7e8;
+            overflow-x: hidden;
         }
 
         .container {
@@ -61,8 +67,13 @@
         }
 
         @keyframes flowFullColor {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 500% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 500% 50%;
+            }
         }
 
         .sub {
@@ -336,7 +347,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .pagination {
@@ -489,6 +502,7 @@
             white-space: nowrap;
             transform: translateX(0);
             will-change: transform;
+            min-width: max-content;
         }
 
         .tag-badge.marquee-active .tag-text {
@@ -496,8 +510,13 @@
         }
 
         @keyframes tagMarquee {
-            from { transform: translateX(0); }
-            to { transform: translateX(calc(-1 * var(--marquee-distance, 0px))); }
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
+            }
         }
 
         .minimized-indicator {
@@ -569,44 +588,55 @@
             body {
                 padding: 1rem 0.8rem;
             }
+
             .container {
                 border-radius: 24px;
                 padding: 1rem 0.8rem;
                 backdrop-filter: blur(1px);
                 -webkit-backdrop-filter: blur(1px);
             }
+
             .flowing-text {
                 font-size: 2rem;
             }
+
             .post-title {
                 font-size: 1.5rem;
             }
+
             .post-header {
                 padding: 1rem 1.2rem;
             }
+
             .post-content {
                 padding: 1.2rem;
             }
+
             .post-meta,
             .post-tags {
                 padding: 0 1rem;
             }
+
             .floating-tag-panel {
                 width: 200px;
                 border-radius: 28px 32px 28px 32px;
             }
+
             .panel-body {
                 max-height: 220px;
             }
+
             .tag-badge {
                 max-width: 100px;
                 font-size: 0.7rem;
                 padding: 0.3rem 0.8rem;
             }
+
             .search-wrap {
                 padding: 0.4rem 1rem;
                 margin-bottom: 1.2rem;
             }
+
             .minimized-indicator {
                 top: 16px;
                 right: 16px;
@@ -616,6 +646,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -629,13 +660,16 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" v-model="searchQuery" placeholder="搜文章或标签喵…" />
                 </div>
+
                 <div v-if="loading" class="loading-area">
                     <div class="spinner"></div>
                     <div style="margin-top:1.2rem;">翻开书页 寻找文章…… 📖✨</div>
                 </div>
+
                 <div v-else-if="error" class="empty-area">
                     {{ error }}
                 </div>
+
                 <template v-else>
                     <div class="blog-grid">
                         <article v-for="post in paginatedPosts" :key="post.fileName" class="post-card">
@@ -643,23 +677,36 @@
                                 <span class="post-icon">{{ post.icon }}</span>
                                 <h2 class="post-title" v-html="escapeHtml(post.title)"></h2>
                             </div>
+
                             <div class="post-meta">
                                 <span class="meta-item">📅 {{ post.date }}</span>
                             </div>
+
                             <div class="post-tags" v-if="post.tags && post.tags.length">
                                 <span class="post-tag" v-for="tag in post.tags" :key="tag">🏷️ {{ tag }}</span>
                             </div>
+
                             <div class="post-content" :ref="setContentRef(post.fileName)" v-html="post.html"></div>
+
                             <button class="expand-btn" v-if="isContentTall(post.fileName)" @click="toggleExpand(post.fileName)">
                                 <span v-if="!expandedMap[post.fileName]">✨ 展开全文</span>
                                 <span v-else>🍃 收起来</span>
                             </button>
                         </article>
                     </div>
+
                     <div class="pagination" v-if="totalPages > 1">
                         <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage = 1">«</button>
                         <button class="page-btn" :disabled="currentPage <= 1" @click="currentPage--">‹</button>
-                        <button class="page-btn" v-for="page in visiblePages" :key="page" :class="{ 'active-page': page === currentPage }" @click="currentPage = page">{{ page }}</button>
+                        <button
+                            class="page-btn"
+                            v-for="page in visiblePages"
+                            :key="page"
+                            :class="{ 'active-page': page === currentPage }"
+                            @click="currentPage = page"
+                        >
+                            {{ page }}
+                        </button>
                         <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage++">›</button>
                         <button class="page-btn" :disabled="currentPage >= totalPages" @click="currentPage = totalPages">»</button>
                     </div>
@@ -676,9 +723,16 @@
                     <span>🏷️ 标签云</span>
                     <button class="minimize-btn" @mousedown.stop @touchstart.stop @click="minimizePanel" title="最小化">─</button>
                 </div>
+
                 <div class="panel-body">
                     <ul class="tag-list">
-                        <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectTag(null)">🍡 全部</li>
+                        <li
+                            class="tag-badge"
+                            :class="{ 'active-tag': selectedTag === null }"
+                            @click="selectTag(null)"
+                        >
+                            🍡 全部
+                        </li>
 
                         <li
                             class="tag-badge"
@@ -730,18 +784,29 @@
                 const panelX = ref(0);
                 const panelY = ref(0);
                 const isDragging = ref(false);
+
                 let dragStartMouseX = 0;
                 let dragStartMouseY = 0;
                 let dragStartPanelX = 0;
                 let dragStartPanelY = 0;
 
-                function setInitialPanelPosition() {
-                    const margin = 24;
+                function getPanelSize() {
                     const panelEl = document.querySelector('.floating-tag-panel');
-                    const panelW = panelEl?.offsetWidth || 240;
-                    const panelH = panelEl?.offsetHeight || 320;
 
-                    panelX.value = window.innerWidth - panelW - margin;
+                    return {
+                        width: panelEl?.offsetWidth || (window.innerWidth <= 680 ? 200 : 240),
+                        height: panelEl?.offsetHeight || 320
+                    };
+                }
+
+                function setInitialPanelPosition() {
+                    const { width: panelW, height: panelH } = getPanelSize();
+
+                    const offsetRight = window.innerWidth <= 680
+                        ? 0
+                        : Math.min(160, window.innerWidth * 0.12);
+
+                    panelX.value = (window.innerWidth - panelW) / 2 + offsetRight;
                     panelY.value = (window.innerHeight - panelH) / 2;
 
                     clampPanelPosition();
@@ -749,9 +814,7 @@
 
                 function clampPanelPosition() {
                     const margin = 8;
-                    const panelEl = document.querySelector('.floating-tag-panel');
-                    const panelW = panelEl?.offsetWidth || 240;
-                    const panelH = panelEl?.offsetHeight || 320;
+                    const { width: panelW, height: panelH } = getPanelSize();
 
                     const maxX = Math.max(margin, window.innerWidth - panelW - margin);
                     const maxY = Math.max(margin, window.innerHeight - panelH - margin);
@@ -760,7 +823,11 @@
                     panelY.value = Math.min(Math.max(panelY.value, margin), maxY);
                 }
 
-                window.addEventListener('resize', clampPanelPosition);
+                function handleResize() {
+                    clampPanelPosition();
+                }
+
+                window.addEventListener('resize', handleResize);
 
                 function minimizePanel() {
                     isMinimized.value = true;
@@ -768,18 +835,25 @@
 
                 function restorePanel() {
                     isMinimized.value = false;
+
                     nextTick(() => {
-                        clampPanelPosition();
+                        if (!panelX.value && !panelY.value) {
+                            setInitialPanelPosition();
+                        } else {
+                            clampPanelPosition();
+                        }
                     });
                 }
 
                 function startDrag(e) {
                     if (e.target.classList.contains('minimize-btn')) return;
+
                     isDragging.value = true;
                     dragStartMouseX = e.clientX;
                     dragStartMouseY = e.clientY;
                     dragStartPanelX = panelX.value;
                     dragStartPanelY = panelY.value;
+
                     window.addEventListener('mousemove', onDrag);
                     window.addEventListener('mouseup', stopDrag);
                 }
@@ -787,63 +861,102 @@
                 function startDragTouch(e) {
                     const touch = e.touches[0];
                     if (!touch || e.target.classList.contains('minimize-btn')) return;
+
                     isDragging.value = true;
                     dragStartMouseX = touch.clientX;
                     dragStartMouseY = touch.clientY;
                     dragStartPanelX = panelX.value;
                     dragStartPanelY = panelY.value;
+
                     window.addEventListener('touchmove', onDragTouch, { passive: false });
                     window.addEventListener('touchend', stopDragTouch);
+                    window.addEventListener('touchcancel', stopDragTouch);
                 }
 
                 function onDrag(e) {
                     if (!isDragging.value) return;
+
                     panelX.value = dragStartPanelX + (e.clientX - dragStartMouseX);
                     panelY.value = dragStartPanelY + (e.clientY - dragStartMouseY);
+
+                    clampPanelPosition();
                 }
 
                 function onDragTouch(e) {
                     if (!isDragging.value) return;
+
+                    e.preventDefault();
+
                     const touch = e.touches[0];
                     if (!touch) return;
+
                     panelX.value = dragStartPanelX + (touch.clientX - dragStartMouseX);
                     panelY.value = dragStartPanelY + (touch.clientY - dragStartMouseY);
+
+                    clampPanelPosition();
                 }
 
                 function stopDrag() {
                     isDragging.value = false;
+
                     window.removeEventListener('mousemove', onDrag);
                     window.removeEventListener('mouseup', stopDrag);
+
                     clampPanelPosition();
                 }
 
                 function stopDragTouch() {
                     isDragging.value = false;
+
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
+                    window.removeEventListener('touchcancel', stopDragTouch);
+
                     clampPanelPosition();
                 }
 
                 function prepareTagMarquee(e) {
                     const badge = e.currentTarget;
                     if (!badge) return;
+
                     const textEl = badge.querySelector('.tag-text');
                     if (!textEl) return;
 
-                    const overflow = textEl.scrollWidth - badge.clientWidth + 12;
                     badge.classList.remove('marquee-active');
+                    textEl.style.transform = 'translateX(0)';
 
-                    if (overflow > 6) {
-                        const duration = Math.min(7, Math.max(2.8, overflow / 28));
-                        badge.style.setProperty('--marquee-distance', `${overflow}px`);
+                    const style = window.getComputedStyle(badge);
+                    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+                    const paddingRight = parseFloat(style.paddingRight) || 0;
+                    const borderLeft = parseFloat(style.borderLeftWidth) || 0;
+                    const borderRight = parseFloat(style.borderRightWidth) || 0;
+
+                    const visibleWidth = badge.clientWidth - paddingLeft - paddingRight - borderLeft - borderRight;
+                    const textWidth = textEl.scrollWidth;
+                    const overflow = textWidth - visibleWidth;
+
+                    if (overflow > 2) {
+                        const distance = Math.ceil(overflow);
+                        const duration = Math.min(7, Math.max(2.8, distance / 28));
+
+                        badge.style.setProperty('--marquee-distance', `${distance}px`);
                         badge.style.setProperty('--marquee-duration', `${duration}s`);
-                        badge.classList.add('marquee-active');
+
+                        requestAnimationFrame(() => {
+                            badge.classList.add('marquee-active');
+                        });
                     }
                 }
 
                 function resetTagMarquee(e) {
                     const badge = e.currentTarget;
                     if (!badge) return;
+
+                    const textEl = badge.querySelector('.tag-text');
+                    if (textEl) {
+                        textEl.style.transform = 'translateX(0)';
+                    }
+
                     badge.classList.remove('marquee-active');
                 }
 
@@ -852,7 +965,8 @@
                     window.removeEventListener('mouseup', stopDrag);
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
-                    window.removeEventListener('resize', clampPanelPosition);
+                    window.removeEventListener('touchcancel', stopDragTouch);
+                    window.removeEventListener('resize', handleResize);
                     document.removeEventListener('click', handleImageClick);
                 });
 
@@ -863,13 +977,16 @@
 
                 function getBaseFolder() {
                     const path = window.location.pathname;
+
                     if (path.endsWith('/')) return path;
+
                     const lastSlash = path.lastIndexOf('/');
                     return path.substring(0, lastSlash + 1);
                 }
 
                 function escapeHtml(str) {
                     if (!str) return '';
+
                     return str.replace(/[&<>]/g, function(m) {
                         if (m === '&') return '&amp;';
                         if (m === '<') return '&lt;';
@@ -880,52 +997,81 @@
 
                 function extractTitleFromMarkdown(mdContent) {
                     const lines = mdContent.split(/\r?\n/);
+
                     for (let line of lines) {
                         if (line.startsWith('# ')) {
                             return line.substring(2).trim();
                         }
                     }
+
                     return null;
                 }
 
                 function parseTagsFromMarkdown(mdContent) {
                     const firstLine = mdContent.split(/\r?\n/)[0] || '';
                     const match = firstLine.match(/^tag:\s*(.+)/i);
+
                     if (!match) return [];
+
                     const raw = match[1];
-                    const tags = raw.split(/[,，]/).map(t => t.trim()).filter(Boolean);
+                    const tags = raw
+                        .split(/[,，]/)
+                        .map(t => t.trim())
+                        .filter(Boolean);
+
                     return tags;
                 }
 
                 function getDeterministicIcon(filename) {
-                    const icons = ['🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂', '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸', '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱', '🐣', '🍒', '🍑', '🍓'];
+                    const icons = [
+                        '🍡', '🍬', '🍘', '🍙', '🎴', '🎐', '🌸', '🍂',
+                        '🍁', '🌻', '⭐', '🍊', '🍰', '🍵', '🎀', '🧸',
+                        '🪶', '✏️', '📓', '🎋', '🍥', '🫖', '🍧', '🐱',
+                        '🐣', '🍒', '🍑', '🍓'
+                    ];
+
                     let hash = 0;
+
                     for (let i = 0; i < filename.length; i++) {
                         hash = ((hash << 5) - hash) + filename.charCodeAt(i);
                         hash |= 0;
                     }
+
                     return icons[Math.abs(hash) % icons.length];
                 }
 
                 function formatDateFromFilename(filename) {
                     const match = filename.match(/_(\d{4})-(\d{2})-(\d{2})\.md$/);
+
                     if (match) {
                         return {
                             display: `${match[1]}年${match[2]}月${match[3]}日`,
-                            timestamp: new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3])).getTime()
+                            timestamp: new Date(
+                                parseInt(match[1]),
+                                parseInt(match[2]) - 1,
+                                parseInt(match[3])
+                            ).getTime()
                         };
                     }
+
                     const fallbackMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})/);
+
                     if (fallbackMatch) {
                         return {
                             display: `${fallbackMatch[1]}年${fallbackMatch[2]}月${fallbackMatch[3]}日`,
-                            timestamp: new Date(parseInt(fallbackMatch[1]), parseInt(fallbackMatch[2]) - 1, parseInt(fallbackMatch[3])).getTime()
+                            timestamp: new Date(
+                                parseInt(fallbackMatch[1]),
+                                parseInt(fallbackMatch[2]) - 1,
+                                parseInt(fallbackMatch[3])
+                            ).getTime()
                         };
                     }
+
                     const now = Date.now();
                     const today = new Date(now);
+
                     return {
-                        display: `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`,
+                        display: `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`,
                         timestamp: now
                     };
                 }
@@ -934,10 +1080,13 @@
                     const base = getBaseFolder();
                     const url = `${base}docs/${fileName}`;
                     const res = await fetch(url);
+
                     if (!res.ok) throw new Error(`无法加载 ${fileName}`);
+
                     const md = await res.text();
 
                     let title = extractTitleFromMarkdown(md);
+
                     if (!title) {
                         let name = fileName.replace(/\.md$/, '');
                         name = name.replace(/_[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '');
@@ -951,17 +1100,23 @@
 
                     const lines = md.split(/\r?\n/);
                     let cleanedMd = md;
+
                     if (lines[0] && /^tag:\s*.+/i.test(lines[0])) {
                         cleanedMd = lines.slice(1).join('\n');
                     }
 
                     let html = '';
+
                     if (typeof marked !== 'undefined') {
                         html = marked.parse(cleanedMd);
-                        if (html instanceof Promise) html = await html;
+
+                        if (html instanceof Promise) {
+                            html = await html;
+                        }
                     } else {
-                        html = `<pre>${escapeHtml(cleanedMd.substring(0,500))}</pre>`;
+                        html = `<pre>${escapeHtml(cleanedMd.substring(0, 500))}</pre>`;
                     }
+
                     return {
                         fileName,
                         title,
@@ -977,13 +1132,20 @@
                     const base = getBaseFolder();
                     const listUrl = `${base}docs/list.txt`;
                     let fileNames = [];
+
                     try {
                         const res = await fetch(listUrl);
+
                         if (!res.ok) {
                             throw new Error('未找到 docs/list.txt，请创建该文件并填入 .md 文件名');
                         }
+
                         const text = await res.text();
-                        fileNames = text.split(/\r?\n/).filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
+
+                        fileNames = text
+                            .split(/\r?\n/)
+                            .filter(line => line.trim().length > 0 && line.trim().endsWith('.md'));
+
                         if (fileNames.length === 0) {
                             throw new Error('list.txt 中没有 .md 文件');
                         }
@@ -992,6 +1154,7 @@
                     }
 
                     const loadedPosts = [];
+
                     for (const fileName of fileNames) {
                         try {
                             const post = await loadMarkdownAndRender(fileName);
@@ -1000,52 +1163,76 @@
                             console.warn(`跳过文件 ${fileName}:`, err);
                         }
                     }
+
                     if (loadedPosts.length === 0) {
                         throw new Error('没有成功加载任何文章，请检查 .md 文件是否存在');
                     }
+
                     return loadedPosts;
                 }
 
                 const sortedTagsWithCount = computed(() => {
                     const tagMap = {};
+
                     posts.value.forEach(p => {
                         if (p.tags) {
                             p.tags.forEach(t => {
                                 if (!tagMap[t]) {
-                                    tagMap[t] = { name: t, count: 0, latestTimestamp: 0 };
+                                    tagMap[t] = {
+                                        name: t,
+                                        count: 0,
+                                        latestTimestamp: 0
+                                    };
                                 }
+
                                 tagMap[t].count++;
+
                                 if (p.timestamp && p.timestamp > tagMap[t].latestTimestamp) {
                                     tagMap[t].latestTimestamp = p.timestamp;
                                 }
                             });
                         }
                     });
+
                     const tagsArray = Object.values(tagMap);
+
                     tagsArray.sort((a, b) => {
-                        if (b.latestTimestamp !== a.latestTimestamp) return b.latestTimestamp - a.latestTimestamp;
+                        if (b.latestTimestamp !== a.latestTimestamp) {
+                            return b.latestTimestamp - a.latestTimestamp;
+                        }
+
                         return a.name.localeCompare(b.name);
                     });
+
                     return tagsArray;
                 });
 
                 const filteredPosts = computed(() => {
                     let result = posts.value;
+
                     if (selectedTag.value) {
                         result = result.filter(p => p.tags && p.tags.includes(selectedTag.value));
                     }
+
                     const q = searchQuery.value.trim().toLowerCase();
+
                     if (q) {
                         result = result.filter(p => {
                             const nameMatch = p.fileName.toLowerCase().includes(q);
-                            const tagMatch = p.tags ? p.tags.some(t => t.toLowerCase().includes(q)) : false;
+                            const tagMatch = p.tags
+                                ? p.tags.some(t => t.toLowerCase().includes(q))
+                                : false;
+
                             return nameMatch || tagMatch;
                         });
                     }
+
                     return result;
                 });
 
-                const totalPages = computed(() => Math.ceil(filteredPosts.value.length / postsPerPage) || 1);
+                const totalPages = computed(() => {
+                    return Math.ceil(filteredPosts.value.length / postsPerPage) || 1;
+                });
 
                 const paginatedPosts = computed(() => {
                     const start = (currentPage.value - 1) * postsPerPage;
@@ -1056,11 +1243,14 @@
                     const total = totalPages.value;
                     const current = currentPage.value;
                     const maxVisible = 5;
+
                     let start = Math.max(1, current - Math.floor(maxVisible / 2));
                     let end = Math.min(total, start + maxVisible - 1);
+
                     if (end - start + 1 < maxVisible) {
                         start = Math.max(1, end - maxVisible + 1);
                     }
+
                     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
                 });
 
@@ -1068,16 +1258,22 @@
 
                 function setContentRef(fileName) {
                     return (el) => {
-                        if (el) contentRefs[fileName] = el;
+                        if (el) {
+                            contentRefs[fileName] = el;
+                        }
                     };
                 }
 
                 function checkContentHeight(fileName) {
                     const el = contentRefs[fileName];
+
                     if (!el) return;
+
                     const maxH = 380;
                     const tall = el.scrollHeight > maxH + 20;
+
                     contentHeightMap[fileName] = tall;
+
                     if (tall && expandedMap[fileName] === undefined) {
                         expandedMap[fileName] = false;
                     }
@@ -1089,8 +1285,10 @@
 
                 function toggleExpand(fileName) {
                     expandedMap[fileName] = !expandedMap[fileName];
+
                     nextTick(() => {
                         const el = contentRefs[fileName];
+
                         if (el) {
                             if (expandedMap[fileName]) {
                                 el.classList.remove('collapsed');
@@ -1104,8 +1302,11 @@
                 function applyCollapseState() {
                     Object.keys(contentRefs).forEach(fileName => {
                         const el = contentRefs[fileName];
+
                         if (!el) return;
+
                         checkContentHeight(fileName);
+
                         if (contentHeightMap[fileName]) {
                             if (!expandedMap[fileName]) {
                                 el.classList.add('collapsed');
@@ -1120,6 +1321,7 @@
 
                 function handleImageClick(e) {
                     const target = e.target;
+
                     if (target.tagName === 'IMG' && target.closest('.post-content')) {
                         lightboxImg.value = target.src;
                     }
@@ -1128,10 +1330,13 @@
                 watch([filteredPosts, paginatedPosts], async () => {
                     Object.keys(expandedMap).forEach(key => delete expandedMap[key]);
                     Object.keys(contentHeightMap).forEach(key => delete contentHeightMap[key]);
+
                     await nextTick();
+
                     Object.keys(contentRefs).forEach(fileName => {
                         checkContentHeight(fileName);
                     });
+
                     applyCollapseState();
                 });
 
@@ -1141,6 +1346,7 @@
                         loading.value = false;
                         return;
                     }
+
                     try {
                         const data = await fetchPosts();
                         posts.value = data;
@@ -1148,6 +1354,7 @@
                         error.value = err.message || '加载文章失败，请确保 docs 目录和 list.txt 配置正确';
                     } finally {
                         loading.value = false;
+
                         await nextTick();
 
                         if (typeof hljs !== 'undefined') {
@@ -1159,8 +1366,8 @@
                         applyCollapseState();
                         document.addEventListener('click', handleImageClick);
 
+                        await nextTick();
                         setInitialPanelPosition();
-                        clampPanelPosition();
                     }
                 });
 
