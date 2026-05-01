@@ -4,10 +4,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
     <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
+    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -465,7 +468,6 @@
             font-weight: 500;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
             max-width: 130px;
             overflow: hidden;
             white-space: nowrap;
@@ -491,18 +493,19 @@
             will-change: transform;
         }
 
-        .tag-text-content span:last-child {
-            margin-left: 1.2rem;
+        .tag-text-content span {
+            padding-right: 2rem;
+            flex-shrink: 0;
         }
 
         .tag-badge:hover .tag-text-content {
             animation: marquee 3.5s linear infinite;
         }
 
-		@keyframes marquee {
-			0% { transform: translateX(0); }
-			100% { transform: translateX(-50%); }
-		}
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
 
         .minimized-indicator {
             position: fixed;
@@ -679,7 +682,10 @@
                     <ul class="tag-list">
                         <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectTag(null)">🍡 全部</li>
                         <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectTag(tag.name)" :title="tag.name">
-		<span class="tag-text-content"><span>{{ tag.name }} ({{ tag.count }})</span><span>{{ tag.name }} ({{ tag.count }})</span></span>
+                            <span class="tag-text-content">
+                                <span>{{ tag.name }} ({{ tag.count }})</span>
+                                <span>{{ tag.name }} ({{ tag.count }})</span>
+                            </span>
                         </li>
                     </ul>
                 </div>
@@ -725,16 +731,9 @@
                 let dragStartPanelY = 0;
 
                 function setInitialPanelPosition() {
-                    const width = window.innerWidth;
-                    const height = window.innerHeight;
                     const panelW = 240;
-                    if (width <= 680) {
-                        panelX.value = Math.max(0, width - 200);
-                        panelY.value = Math.max(0, height - 340);
-                    } else {
-                        panelX.value = Math.max(0, width - panelW - 20);
-                        panelY.value = Math.max(0, height - 420);
-                    }
+                    panelX.value = Math.max(0, window.innerWidth - panelW - 30);
+                    panelY.value = Math.max(0, window.innerHeight - 420);
                 }
 
                 function clampPanelPosition() {
@@ -1082,16 +1081,15 @@
                     }
                 }
 
-		watch([filteredPosts, paginatedPosts], async () => {
-			Object.keys(expandedMap).forEach(key => delete expandedMap[key]);
-			Object.keys(contentHeightMap).forEach(key => delete contentHeightMap[key]);
-			await nextTick();
-			// 先重新计算所有内容高度
-			Object.keys(contentRefs).forEach(fileName => {
-				checkContentHeight(fileName);
-			});
-			applyCollapseState();
-		});
+                watch([filteredPosts, paginatedPosts], async () => {
+                    Object.keys(expandedMap).forEach(key => delete expandedMap[key]);
+                    Object.keys(contentHeightMap).forEach(key => delete contentHeightMap[key]);
+                    await nextTick();
+                    Object.keys(contentRefs).forEach(fileName => {
+                        checkContentHeight(fileName);
+                    });
+                    applyCollapseState();
+                });
 
                 onMounted(async () => {
                     if (typeof marked === 'undefined') {
