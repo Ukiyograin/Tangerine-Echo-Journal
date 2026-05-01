@@ -4,13 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
     <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
-    </script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,26 +16,21 @@
         }
 
         body {
-            /* ✨ 改用 background.png 作为背景，保留暖色fallback */
             background: #fef7e8 url('background.png') center/cover no-repeat fixed;
             font-family: 'Segoe UI', 'Noto Sans CJK JP', 'Helvetica Neue', 'Poppins', system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
             color: #3e2a1f;
             line-height: 1.6;
             padding: 2rem 1.5rem;
-            /* 在背景图加载前显示暖色底 */
             background-color: #fef7e8;
-            /* 如果图片较小，用cover填满；如果图片是纹理则可用repeat */
-            /* 用户可按需调整 background-size */
         }
 
         .container {
             max-width: 1100px;
             margin: 0 auto;
-            /* 给内容区加一层半透明暖色底衬，让文字在图片上清晰可读 */
-            background: rgba(255, 250, 242, 0.72);
+            background: rgba(255, 250, 242, 0.75);
             border-radius: 36px;
             padding: 1.8rem 2rem;
-            box-shadow: 0 8px 40px -12px rgba(100, 60, 20, 0.10);
+            box-shadow: 0 8px 40px -12px rgba(100, 60, 20, 0.12);
             backdrop-filter: blur(2px);
             -webkit-backdrop-filter: blur(2px);
         }
@@ -64,19 +56,13 @@
             color: transparent;
             animation: flowFullColor 20s linear infinite;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            /* 🚀 GPU加速提示 */
             will-change: background-position;
-            /* 使用transform3d触发GPU合成层，减轻重绘压力 */
             transform: translate3d(0, 0, 0);
         }
 
         @keyframes flowFullColor {
-            0% {
-                background-position: 0% 50%;
-            }
-            100% {
-                background-position: 500% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            100% { background-position: 500% 50%; }
         }
 
         .sub {
@@ -98,7 +84,6 @@
             padding: 0.5rem 1.2rem;
             margin-bottom: 1.8rem;
             box-shadow: 0 6px 18px -8px rgba(180, 110, 30, 0.08);
-            /* 🚀 只过渡需要的属性 */
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
@@ -133,11 +118,9 @@
             background: #fffaf2;
             border-radius: 42px 32px 48px 32px;
             box-shadow: 0 18px 32px -12px rgba(100, 60, 10, 0.12), 0 2px 5px rgba(0, 0, 0, 0.02);
-            /* 🚀 只过渡transform和阴影，避免all带来的布局重计算 */
             transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
             border: 1px solid #ffe1b9;
             overflow: hidden;
-            /* 🚀 GPU加速提示 */
             will-change: transform;
         }
 
@@ -247,7 +230,6 @@
             margin-top: 0.8rem;
             margin-left: 2rem;
             margin-bottom: 1.4rem;
-            /* 🚀 具体过渡属性 */
             transition: background 0.2s, border-color 0.2s;
             font-weight: 600;
         }
@@ -281,7 +263,6 @@
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
             margin: 1.2rem auto;
             cursor: zoom-in;
-            /* 🚀 只过渡transform */
             transition: transform 0.2s;
             will-change: transform;
         }
@@ -351,14 +332,11 @@
             border-top: 4px solid #e97c2b;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            /* 🚀 spinner使用transform，已是GPU友好 */
             will-change: transform;
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
         .pagination {
@@ -382,7 +360,6 @@
             justify-content: center;
             cursor: pointer;
             font-weight: 600;
-            /* 🚀 具体过渡属性 */
             transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
             font-size: 0.9rem;
         }
@@ -405,7 +382,6 @@
             pointer-events: none;
         }
 
-        /* ========== 浮动标签面板 ========== */
         .floating-tag-panel {
             position: fixed;
             width: 240px;
@@ -418,17 +394,13 @@
             flex-direction: column;
             overflow: hidden;
             user-select: none;
-            /* 🚀 移除 backdrop-filter: blur(6px) —— 这是性能杀手！ */
             transition: opacity 0.2s, visibility 0.2s, box-shadow 0.2s;
-            /* GPU加速 */
             will-change: transform, left, top;
         }
 
         .floating-tag-panel.dragging {
             box-shadow: 0 25px 45px -10px rgba(200, 120, 30, 0.3);
             cursor: grabbing;
-            /* 拖拽时降低过渡以避免延迟感 */
-            transition: box-shadow 0.15s;
         }
 
         .panel-header {
@@ -481,7 +453,6 @@
             list-style: none;
         }
 
-        /* ========== 🏷️ 标签徽章 —— 修复marquee滚动 ========== */
         .tag-badge {
             background: #fff3e0;
             border: 1px solid #ffcb8c;
@@ -490,14 +461,12 @@
             border-radius: 40px;
             font-size: 0.8rem;
             cursor: pointer;
-            /* 🚀 具体过渡 */
             transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 4px;
             max-width: 130px;
-            /* 🔑 关键：隐藏溢出，配合marquee动画裁剪文字 */
             overflow: hidden;
             white-space: nowrap;
             position: relative;
@@ -516,36 +485,25 @@
             box-shadow: 0 4px 10px rgba(220, 130, 40, 0.25);
         }
 
-        .tag-text {
-            display: inline-block;
+        .tag-text-content {
+            display: inline-flex;
             white-space: nowrap;
-            /* 🔑 GPU加速的transform动画 */
             will-change: transform;
         }
 
-        /* 🔑 修复后的marquee：文字从右边出现，完全滚出左边，循环往复 */
-        .tag-badge:hover .tag-text {
-            /*
-            * 动画说明：
-            * - 文字从正常位置(translateX=0)开始
-            * - 向左移动自身宽度+150px，确保完全移出可视区域
-            * - 动画循环时瞬间回到起始位置，视觉上"从右边重新出现"
-            * - 对于130px宽的容器，150px的额外距离足够覆盖任何合理长度的标签文字
-            */
+        .tag-text-content span:last-child {
+            margin-left: 1.2rem;
+        }
+
+        .tag-badge:hover .tag-text-content {
             animation: marquee 3.5s linear infinite;
         }
 
         @keyframes marquee {
-            0% {
-                transform: translateX(0);
-            }
-            /* 文字完全移出左边：自身100%宽度 + 额外150px安全距离 */
-            100% {
-                transform: translateX(calc(-100% - 150px));
-            }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - 0.6rem)); }
         }
 
-        /* ========== 最小化指示器 ========== */
         .minimized-indicator {
             position: fixed;
             top: 20px;
@@ -563,7 +521,6 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            /* 🚀 具体过渡 */
             transition: background 0.2s, border-color 0.2s, transform 0.2s;
             will-change: transform;
         }
@@ -574,21 +531,18 @@
             transform: translateY(-2px);
         }
 
-        /* ========== 灯箱 ========== */
         .lightbox {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* 🚀 移除 backdrop-filter: blur(8px)，用更深的半透明背景替代 */
             background: rgba(0, 0, 0, 0.82);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             cursor: zoom-out;
-            /* GPU加速 */
             will-change: opacity;
         }
 
@@ -598,7 +552,6 @@
             border-radius: 32px;
             box-shadow: 0 24px 50px rgba(0, 0, 0, 0.3);
             cursor: default;
-            /* 🚀 GPU加速 */
             will-change: transform;
         }
 
@@ -616,10 +569,9 @@
             opacity: 0.6;
         }
 
-        /* ========== 📱 移动端适配 ========== */
         @media (max-width: 680px) {
             body {
-                padding: 0.6rem 0.4rem;
+                padding: 1rem 0.8rem;
             }
             .container {
                 border-radius: 24px;
@@ -628,45 +580,42 @@
                 -webkit-backdrop-filter: blur(1px);
             }
             .flowing-text {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             .post-title {
-                font-size: 1.4rem;
+                font-size: 1.5rem;
             }
             .post-header {
-                padding: 1rem 1rem;
+                padding: 1rem 1.2rem;
             }
             .post-content {
-                padding: 1rem 1rem;
+                padding: 1.2rem;
             }
             .post-meta,
             .post-tags {
                 padding: 0 1rem;
             }
             .floating-tag-panel {
-                width: 190px;
+                width: 200px;
                 border-radius: 28px 32px 28px 32px;
             }
             .panel-body {
-                max-height: 200px;
+                max-height: 220px;
             }
             .tag-badge {
                 max-width: 100px;
                 font-size: 0.7rem;
-                padding: 0.3rem 0.7rem;
+                padding: 0.3rem 0.8rem;
             }
             .search-wrap {
-                padding: 0.4rem 0.9rem;
-                margin-bottom: 1rem;
+                padding: 0.4rem 1rem;
+                margin-bottom: 1.2rem;
             }
             .minimized-indicator {
-                top: 12px;
-                right: 10px;
-                padding: 0.3rem 0.8rem;
-                font-size: 0.75rem;
-            }
-            .post-content img {
-                max-width: 240px;
+                top: 16px;
+                right: 16px;
+                padding: 0.3rem 1rem;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -730,7 +679,10 @@
                     <ul class="tag-list">
                         <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectTag(null)">🍡 全部</li>
                         <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectTag(tag.name)" :title="tag.name">
-                            <span class="tag-text">{{ tag.name }} ({{ tag.count }})</span>
+                            <span class="tag-text-content">
+                                <span>{{ tag.name }} ({{ tag.count }})</span>
+                                <span>{{ tag.name }} ({{ tag.count }})</span>
+                            </span>
                         </li>
                     </ul>
                 </div>
@@ -767,36 +719,34 @@
                 const lightboxImg = ref(null);
                 const isMinimized = ref(false);
 
-                const panelX = ref(window.innerWidth - 260);
-                const panelY = ref(window.innerHeight - 420);
+                const panelX = ref(0);
+                const panelY = ref(0);
                 const isDragging = ref(false);
-                let dragOffsetX = 0;
-                let dragOffsetY = 0;
-
-                function clampPanelPosition() {
-                    const width = 240;
-                    const maxX = window.innerWidth - width;
-                    const maxY = window.innerHeight - 60;
-                    panelX.value = Math.min(Math.max(panelX.value, 0), maxX);
-                    panelY.value = Math.min(Math.max(panelY.value, 0), maxY);
-                }
+                let dragStartMouseX = 0;
+                let dragStartMouseY = 0;
+                let dragStartPanelX = 0;
+                let dragStartPanelY = 0;
 
                 function setInitialPanelPosition() {
                     const width = window.innerWidth;
                     const height = window.innerHeight;
+                    const panelW = 240;
                     if (width <= 680) {
-                        panelX.value = Math.max(0, width - 210);
+                        panelX.value = Math.max(0, width - 200);
                         panelY.value = Math.max(0, height - 340);
                     } else {
-                        panelX.value = Math.max(0, width - 260);
+                        panelX.value = Math.max(0, width - panelW - 20);
                         panelY.value = Math.max(0, height - 420);
                     }
-                    clampPanelPosition();
                 }
 
-                window.addEventListener('resize', () => {
-                    clampPanelPosition();
-                });
+                function clampPanelPosition() {
+                    const panelW = 240;
+                    panelX.value = Math.min(Math.max(panelX.value, 0), window.innerWidth - panelW);
+                    panelY.value = Math.min(Math.max(panelY.value, 0), window.innerHeight - 60);
+                }
+
+                window.addEventListener('resize', clampPanelPosition);
 
                 function minimizePanel() {
                     isMinimized.value = true;
@@ -810,37 +760,38 @@
                 function startDrag(e) {
                     if (e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    dragOffsetX = e.clientX - rect.left;
-                    dragOffsetY = e.clientY - rect.top;
+                    dragStartMouseX = e.clientX;
+                    dragStartMouseY = e.clientY;
+                    dragStartPanelX = panelX.value;
+                    dragStartPanelY = panelY.value;
                     window.addEventListener('mousemove', onDrag);
                     window.addEventListener('mouseup', stopDrag);
                 }
 
                 function startDragTouch(e) {
                     const touch = e.touches[0];
-                    if (!touch) return;
-                    if (e.target.classList.contains('minimize-btn')) return;
+                    if (!touch || e.target.classList.contains('minimize-btn')) return;
                     isDragging.value = true;
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    dragOffsetX = touch.clientX - rect.left;
-                    dragOffsetY = touch.clientY - rect.top;
+                    dragStartMouseX = touch.clientX;
+                    dragStartMouseY = touch.clientY;
+                    dragStartPanelX = panelX.value;
+                    dragStartPanelY = panelY.value;
                     window.addEventListener('touchmove', onDragTouch, { passive: false });
                     window.addEventListener('touchend', stopDragTouch);
                 }
 
                 function onDrag(e) {
                     if (!isDragging.value) return;
-                    panelX.value = e.clientX - dragOffsetX;
-                    panelY.value = e.clientY - dragOffsetY;
+                    panelX.value = dragStartPanelX + (e.clientX - dragStartMouseX);
+                    panelY.value = dragStartPanelY + (e.clientY - dragStartMouseY);
                 }
 
                 function onDragTouch(e) {
                     if (!isDragging.value) return;
                     const touch = e.touches[0];
                     if (!touch) return;
-                    panelX.value = touch.clientX - dragOffsetX;
-                    panelY.value = touch.clientY - dragOffsetY;
+                    panelX.value = dragStartPanelX + (touch.clientX - dragStartMouseX);
+                    panelY.value = dragStartPanelY + (touch.clientY - dragStartMouseY);
                 }
 
                 function stopDrag() {
@@ -1134,6 +1085,15 @@
                     }
                 }
 
+                // 监听筛选结果变化，重置展开状态
+                watch([filteredPosts, paginatedPosts], async () => {
+                    // 清除所有展开状态
+                    Object.keys(expandedMap).forEach(key => delete expandedMap[key]);
+                    Object.keys(contentHeightMap).forEach(key => delete contentHeightMap[key]);
+                    await nextTick();
+                    applyCollapseState();
+                });
+
                 onMounted(async () => {
                     if (typeof marked === 'undefined') {
                         error.value = 'Markdown 解析库加载失败，请刷新页面重试';
@@ -1156,6 +1116,7 @@
                         applyCollapseState();
                         document.addEventListener('click', handleImageClick);
                         setInitialPanelPosition();
+                        clampPanelPosition();
                     }
                 });
 
