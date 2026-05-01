@@ -4,13 +4,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
     <title>柑音手账</title>
     <link rel="icon" type="image/png" href="icon/icon.png">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
-    </script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         * {
             margin: 0;
@@ -487,24 +484,20 @@
             box-shadow: 0 4px 10px rgba(220, 130, 40, 0.25);
         }
 
-        .tag-text-content {
-            display: inline-flex;
+        .tag-text {
+            display: inline-block;
             white-space: nowrap;
+            transform: translateX(0);
             will-change: transform;
         }
 
-        .tag-text-content span {
-            padding-right: 2rem;
-            flex-shrink: 0;
+        .tag-badge.marquee-active .tag-text {
+            animation: tagMarquee var(--marquee-duration, 3.6s) ease-in-out infinite alternate;
         }
 
-        .tag-badge:hover .tag-text-content {
-            animation: marquee 3.5s linear infinite;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+        @keyframes tagMarquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(-1 * var(--marquee-distance, 0px))); }
         }
 
         .minimized-indicator {
@@ -673,7 +666,12 @@
                 </template>
             </div>
 
-            <div class="floating-tag-panel" v-if="sortedTagsWithCount.length && !isMinimized" :style="{ left: panelX + 'px', top: panelY + 'px' }" :class="{ dragging: isDragging }">
+            <div
+                class="floating-tag-panel"
+                v-if="sortedTagsWithCount.length && !isMinimized"
+                :style="{ left: panelX + 'px', top: panelY + 'px' }"
+                :class="{ dragging: isDragging }"
+            >
                 <div class="panel-header" @mousedown="startDrag" @touchstart.prevent="startDragTouch">
                     <span>🏷️ 标签云</span>
                     <button class="minimize-btn" @mousedown.stop @touchstart.stop @click="minimizePanel" title="最小化">─</button>
@@ -681,11 +679,18 @@
                 <div class="panel-body">
                     <ul class="tag-list">
                         <li class="tag-badge" :class="{ 'active-tag': selectedTag === null }" @click="selectTag(null)">🍡 全部</li>
-                        <li class="tag-badge" v-for="tag in sortedTagsWithCount" :key="tag.name" :class="{ 'active-tag': selectedTag === tag.name }" @click="selectTag(tag.name)" :title="tag.name">
-                            <span class="tag-text-content">
-                                <span>{{ tag.name }} ({{ tag.count }})</span>
-                                <span>{{ tag.name }} ({{ tag.count }})</span>
-                            </span>
+
+                        <li
+                            class="tag-badge"
+                            v-for="tag in sortedTagsWithCount"
+                            :key="tag.name"
+                            :class="{ 'active-tag': selectedTag === tag.name }"
+                            @click="selectTag(tag.name)"
+                            @mouseenter="prepareTagMarquee"
+                            @mouseleave="resetTagMarquee"
+                            :title="tag.name"
+                        >
+                            <span class="tag-text">{{ tag.name }} ({{ tag.count }})</span>
                         </li>
                     </ul>
                 </div>
@@ -731,15 +736,28 @@
                 let dragStartPanelY = 0;
 
                 function setInitialPanelPosition() {
-                    const panelW = 240;
-                    panelX.value = Math.max(0, window.innerWidth - panelW - 30);
-                    panelY.value = Math.max(0, window.innerHeight - 420);
+                    const margin = 24;
+                    const panelEl = document.querySelector('.floating-tag-panel');
+                    const panelW = panelEl?.offsetWidth || 240;
+                    const panelH = panelEl?.offsetHeight || 320;
+
+                    panelX.value = window.innerWidth - panelW - margin;
+                    panelY.value = (window.innerHeight - panelH) / 2;
+
+                    clampPanelPosition();
                 }
 
                 function clampPanelPosition() {
-                    const panelW = 240;
-                    panelX.value = Math.min(Math.max(panelX.value, 0), window.innerWidth - panelW);
-                    panelY.value = Math.min(Math.max(panelY.value, 0), window.innerHeight - 60);
+                    const margin = 8;
+                    const panelEl = document.querySelector('.floating-tag-panel');
+                    const panelW = panelEl?.offsetWidth || 240;
+                    const panelH = panelEl?.offsetHeight || 320;
+
+                    const maxX = Math.max(margin, window.innerWidth - panelW - margin);
+                    const maxY = Math.max(margin, window.innerHeight - panelH - margin);
+
+                    panelX.value = Math.min(Math.max(panelX.value, margin), maxX);
+                    panelY.value = Math.min(Math.max(panelY.value, margin), maxY);
                 }
 
                 window.addEventListener('resize', clampPanelPosition);
@@ -750,7 +768,9 @@
 
                 function restorePanel() {
                     isMinimized.value = false;
-                    clampPanelPosition();
+                    nextTick(() => {
+                        clampPanelPosition();
+                    });
                 }
 
                 function startDrag(e) {
@@ -804,12 +824,36 @@
                     clampPanelPosition();
                 }
 
+                function prepareTagMarquee(e) {
+                    const badge = e.currentTarget;
+                    if (!badge) return;
+                    const textEl = badge.querySelector('.tag-text');
+                    if (!textEl) return;
+
+                    const overflow = textEl.scrollWidth - badge.clientWidth + 12;
+                    badge.classList.remove('marquee-active');
+
+                    if (overflow > 6) {
+                        const duration = Math.min(7, Math.max(2.8, overflow / 28));
+                        badge.style.setProperty('--marquee-distance', `${overflow}px`);
+                        badge.style.setProperty('--marquee-duration', `${duration}s`);
+                        badge.classList.add('marquee-active');
+                    }
+                }
+
+                function resetTagMarquee(e) {
+                    const badge = e.currentTarget;
+                    if (!badge) return;
+                    badge.classList.remove('marquee-active');
+                }
+
                 onBeforeUnmount(() => {
                     window.removeEventListener('mousemove', onDrag);
                     window.removeEventListener('mouseup', stopDrag);
                     window.removeEventListener('touchmove', onDragTouch);
                     window.removeEventListener('touchend', stopDragTouch);
                     window.removeEventListener('resize', clampPanelPosition);
+                    document.removeEventListener('click', handleImageClick);
                 });
 
                 function selectTag(tag) {
@@ -1105,13 +1149,16 @@
                     } finally {
                         loading.value = false;
                         await nextTick();
+
                         if (typeof hljs !== 'undefined') {
                             document.querySelectorAll('.post-content pre code').forEach((block) => {
                                 hljs.highlightElement(block);
                             });
                         }
+
                         applyCollapseState();
                         document.addEventListener('click', handleImageClick);
+
                         setInitialPanelPosition();
                         clampPanelPosition();
                     }
@@ -1144,6 +1191,8 @@
                     setContentRef,
                     isContentTall,
                     toggleExpand,
+                    prepareTagMarquee,
+                    resetTagMarquee
                 };
             }
         }).mount('#app');
